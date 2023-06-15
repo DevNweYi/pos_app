@@ -37,7 +37,7 @@ class _NavDrawerState extends State<NavDrawer> {
                 color: Colors.green[300],
               ),
               ListTile(
-                leading: Icon(Icons.home),
+                leading: Icon(Icons.shopping_basket),
                 title: Text(AppString.sale),
                 onTap: (){
                     Navigator.of(context).pushReplacementNamed('/');
@@ -45,10 +45,18 @@ class _NavDrawerState extends State<NavDrawer> {
               ),
               Divider(),
               ListTile(
-                leading: Icon(Icons.home),
-                title: Text(AppString.purchase),
+                leading: Icon(Icons.receipt),
+                title: Text(AppString.receipt),
                 onTap: (){
-                  Navigator.of(context).pushReplacementNamed('/purchase_page');
+                  Navigator.of(context).pushReplacementNamed('/receipt_page');
+                },
+              ),
+              Divider(),
+              ListTile(
+                leading: Icon(Icons.list),
+                title: Text(AppString.item),
+                onTap: (){
+                  Navigator.of(context).pushReplacementNamed('/item_page');
                 },
               ),
               Divider(),

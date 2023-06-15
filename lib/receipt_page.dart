@@ -2,19 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:pos_app/nav_drawer.dart';
 import 'package:pos_app/value/app_string.dart';
 
-class PurchasePage extends StatefulWidget {
-  const PurchasePage({super.key});
+class ReceiptPage extends StatefulWidget {
+  const ReceiptPage({super.key});
 
   @override
-  State<PurchasePage> createState() => _PurchasePageState();
+  State<ReceiptPage> createState() => _ReceiptPageState();
 }
 
-class _PurchasePageState extends State<PurchasePage> {
+class _ReceiptPageState extends State<ReceiptPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       drawer: NavDrawer(),
-      appBar: AppBar(title: Text(AppString.purchase)),
+      appBar: AppBar(title: Text(AppString.receipt)),
       
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pos_app/purchase_page.dart';
+import 'package:pos_app/item_page.dart';
+import 'package:pos_app/receipt_page.dart';
 import 'package:pos_app/sale_page.dart';
 import 'package:pos_app/setting_page.dart';
 
@@ -32,7 +33,8 @@ class MyApp extends StatelessWidget {
       home: const SalePage(),
       // Register routes
       routes: {
-        '/purchase_page': (BuildContext ctx) => const PurchasePage(),
+        '/receipt_page': (BuildContext ctx) => const ReceiptPage(),
+        '/item_page': (BuildContext ctx) => const ItemPage(),
         '/setting_page': (BuildContext ctx) => const SettingPage(),
       },
     );
