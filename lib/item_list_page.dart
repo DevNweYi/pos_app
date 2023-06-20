@@ -28,29 +28,50 @@ class _ItemListPageState extends State<ItemListPage> {
       ),
       body: Column(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: DropdownButton(
-                  value: dropdownvalue,
-                  icon: const Icon(Icons.keyboard_arrow_down), 
-                  items: categories.map((String category) {
-                    return DropdownMenuItem(
-                      value: category,
-                      child: Text(category),
-                    );
-                  }).toList(),
-                  onChanged: (value) {},
-                  isExpanded: true,
+          Container(
+            //color: Colors.red,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(border: Border.all(color: Colors.black12)),
+                    //color: Colors.white,
+                    height: 50,
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton(
+                        value: dropdownvalue,
+                        icon: const Icon(Icons.keyboard_arrow_down), 
+                        items: categories.map((String category) {
+                          return DropdownMenuItem(
+                            value: category,
+                            child: Text(category),
+                          );
+                        }).toList(),
+                        onChanged: (value) {},
+                        isExpanded: true,
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-              OutlinedButton(
-                child: Icon(Icons.search),
-                onPressed: () {
-                  
-                },
-              ),
-            ],
+                Container(
+                  decoration: BoxDecoration(border: Border.all(color: Colors.black12)),
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
+                    child: Icon(Icons.search,color: Colors.black45,),
+                    onPressed: () {
+                      
+                    },)
+                  /* OutlinedButton(
+                    child: Icon(Icons.search),
+                    style: OutlinedButton.styleFrom(backgroundColor: Colors.green,),
+                    onPressed: () {
+                      
+                    },
+                  ), */
+                ),
+              ],
+            ),
           )
         ],
       ),
