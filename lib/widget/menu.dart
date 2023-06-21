@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class MenuWidget extends StatelessWidget {
+class Menu extends StatelessWidget {
   final String text;
   final IconData icon;
 
-  const MenuWidget({super.key, required this.text, required this.icon});
+  const Menu({super.key, required this.text, required this.icon});
 
   @override
   Widget build(BuildContext context) {

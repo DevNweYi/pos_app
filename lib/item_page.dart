@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:pos_app/item_list_page.dart';
 import 'package:pos_app/nav_drawer.dart';
 import 'package:pos_app/value/app_string.dart';
-import 'package:pos_app/widget/menu_widget.dart';
+import 'package:pos_app/widget/menu.dart';
 
 class ItemPage extends StatefulWidget {
   const ItemPage({super.key});
@@ -26,13 +26,13 @@ class _ItemPageState extends State<ItemPage> {
                   Get.to(const ItemListPage());
                 },
                 child:
-                    const MenuWidget(text: AppString.items, icon: Icons.list)),
+                    const Menu(text: AppString.items, icon: Icons.list)),
             const Divider(),
             InkWell(
                 onTap: () {
                   print('category clicked');
                 },
-                child: const MenuWidget(
+                child: const Menu(
                     text: AppString.categories, icon: Icons.category)),
             const Divider(),
           ],

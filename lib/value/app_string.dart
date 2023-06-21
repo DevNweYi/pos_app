@@ -5,4 +5,5 @@ class AppString{
   static const String setting="Setting";
   static const String items="Items";
   static const String categories="Categories";
+  static const String search="Search";
 }
