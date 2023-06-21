@@ -18,7 +18,7 @@ class _ItemListPageState extends State<ItemListPage> {
     'Category 4',
     'Category 5',
   ];
-  bool isShowSearchBox=false;
+  bool isShowSearchBox = false;
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +27,13 @@ class _ItemListPageState extends State<ItemListPage> {
         title: const Text(AppString.items),
       ),
       body: Column(
-        children: [
-          isShowSearchBox? _searchBox() : _categorySearch()],
+        children: [isShowSearchBox ? _searchBox() : _categorySearch()],
       ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.add),
+        onPressed: (){
+
+      }),
     );
   }
 
@@ -42,7 +46,7 @@ class _ItemListPageState extends State<ItemListPage> {
             child: Container(
               decoration:
                   BoxDecoration(border: Border.all(color: Colors.black12)),
-              height: 50,
+              height: 60,
               child: DropdownButtonHideUnderline(
                 child: ButtonTheme(
                   alignedDropdown: true,
@@ -69,16 +73,17 @@ class _ItemListPageState extends State<ItemListPage> {
           Container(
               decoration:
                   BoxDecoration(border: Border.all(color: Colors.black12)),
-              height: 50,
+              height: 60,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.white),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white, elevation: 0),
                 child: const Icon(
                   Icons.search,
                   color: Colors.black45,
                 ),
                 onPressed: () {
                   setState(() {
-                    isShowSearchBox=true;
+                    isShowSearchBox = true;
                   });
                 },
               )),
@@ -89,21 +94,19 @@ class _ItemListPageState extends State<ItemListPage> {
 
   Widget _searchBox() {
     return Container(
-      color: Colors.yellow,
+      decoration: BoxDecoration(border: Border.all(color: Colors.black12)),
       child: TextField(
-        decoration: InputDecoration(
-            labelText: AppString.search,
-            hintText: AppString.search,
-            suffixIcon: IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: (() {
-                setState(() {
-                  isShowSearchBox=false;
-                });
-              }),
-            ),
-            border: const OutlineInputBorder()),
-      ),
+          decoration: InputDecoration(
+              hintText: AppString.search,
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: (() {
+                  setState(() {
+                    isShowSearchBox = false;
+                  });
+                }),
+              ),
+              border: const OutlineInputBorder(borderSide: BorderSide.none))),
     );
   }
 }
