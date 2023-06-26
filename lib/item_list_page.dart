@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:pos_app/create_item_page.dart';
 import 'package:pos_app/value/app_string.dart';
 
 class ItemListPage extends StatefulWidget {
@@ -30,9 +32,9 @@ class _ItemListPageState extends State<ItemListPage> {
         children: [isShowSearchBox ? _searchBox() : _categorySearch()],
       ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
         onPressed: (){
-
+          Get.to(const CreateItemPage());
       }),
     );
   }
