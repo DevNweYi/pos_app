@@ -43,7 +43,7 @@ class _CreateItemPageState extends State<CreateItemPage> {
           child: Column(
             children: [
                 Container(               
-                  decoration: BoxDecoration(border: Border.all(color: Colors.black12)),
+                  decoration: BoxDecoration(border: Border.all(color: Colors.black12),borderRadius: const BorderRadius.all(Radius.circular(5))),
                   child: TextField(
                     controller: createItemController.codeController,
                     textInputAction: TextInputAction.next,
@@ -55,7 +55,7 @@ class _CreateItemPageState extends State<CreateItemPage> {
                 ),              
                 Container(
                   margin: const EdgeInsets.only(top: 10),
-                  decoration: BoxDecoration(border: Border.all(color: Colors.black12)),
+                  decoration: BoxDecoration(border: Border.all(color: Colors.black12),borderRadius: const BorderRadius.all(Radius.circular(5))),
                   child: TextField(
                     controller: createItemController.nameController,
                     textInputAction: TextInputAction.next,
@@ -68,7 +68,8 @@ class _CreateItemPageState extends State<CreateItemPage> {
                 Container(
                   margin: const EdgeInsets.only(top: 10),
                   decoration:
-                      BoxDecoration(border: Border.all(color: Colors.black12)),
+                      BoxDecoration(border: Border.all(color: Colors.black12),borderRadius: const BorderRadius.all(Radius.circular(5))),
+                  height: 60,
                   child: DropdownButtonHideUnderline(
                     child: ButtonTheme(
                       alignedDropdown: true,
@@ -93,7 +94,7 @@ class _CreateItemPageState extends State<CreateItemPage> {
                 ),
                 Container(
                   margin: const EdgeInsets.only(top: 10),
-                  decoration: BoxDecoration(border: Border.all(color: Colors.black12)),
+                  decoration: BoxDecoration(border: Border.all(color: Colors.black12),borderRadius: const BorderRadius.all(Radius.circular(5))),
                   child: TextField(
                     controller: createItemController.salePriceController,
                     textInputAction: TextInputAction.next,
@@ -106,7 +107,7 @@ class _CreateItemPageState extends State<CreateItemPage> {
                 ),
                 Container(
                   margin: const EdgeInsets.only(top: 10),
-                  decoration: BoxDecoration(border: Border.all(color: Colors.black12)),
+                  decoration: BoxDecoration(border: Border.all(color: Colors.black12),borderRadius: const BorderRadius.all(Radius.circular(5))),
                   child: TextField(
                     controller: createItemController.purchasePriceController,
                     textInputAction: TextInputAction.next,
@@ -119,7 +120,7 @@ class _CreateItemPageState extends State<CreateItemPage> {
                 ),
                 Container(
                   margin: const EdgeInsets.only(top: 10),
-                  decoration: BoxDecoration(border: Border.all(color: Colors.black12)),
+                  decoration: BoxDecoration(border: Border.all(color: Colors.black12),borderRadius: const BorderRadius.all(Radius.circular(5))),
                   child: TextField(
                     controller: createItemController.costController,
                     textInputAction: TextInputAction.done,
