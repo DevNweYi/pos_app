@@ -29,7 +29,9 @@ class _CreateCategoryPageState extends State<CreateCategoryPage> {
               AppString.save,
               style: TextStyle(color: Colors.black87),
             ),
-            onPressed: () {},
+            onPressed: () {
+              createCategoryController.create();
+            },
           )
         ],
       ),

@@ -1,4 +1,5 @@
 class AppString{
+  static const String appName="POS";
   static const String sale="Sale";
   static const String receipt="Receipt";
   static const String item="Item";
@@ -16,4 +17,9 @@ class AppString{
   static const String choosePhoto="CHOOSE PHOTO";
   static const String takePhoto="TAKE PHOTO";
   static const String createCategory="Create Category";
+  static const String enterCategoryCode="Enter Category Code";
+  static const String enterCategoryName="Enter Category Name";
+  static const String savedCategory="Saved Category";
+  static const String somethingWentWrong="Something Went Wrong";
+  static const String duplicateCode="Existing Code! Try another Code";
 }
