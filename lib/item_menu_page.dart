@@ -8,14 +8,14 @@ import 'package:pos_app/widget/menu.dart';
 
 import 'category_list_page.dart';
 
-class ItemPage extends StatefulWidget {
-  const ItemPage({super.key});
+class ItemMenuPage extends StatefulWidget {
+  const ItemMenuPage({super.key});
 
   @override
-  State<ItemPage> createState() => _ItemPageState();
+  State<ItemMenuPage> createState() => _ItemMenuPageState();
 }
 
-class _ItemPageState extends State<ItemPage> {
+class _ItemMenuPageState extends State<ItemMenuPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

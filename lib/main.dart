@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pos_app/item_page.dart';
+import 'package:pos_app/item_menu_page.dart';
 import 'package:pos_app/receipt_page.dart';
 import 'package:pos_app/sale_page.dart';
 import 'package:pos_app/setting_page.dart';
@@ -34,7 +34,7 @@ class MyApp extends StatelessWidget {
       // Register routes
       routes: {
         '/receipt_page': (BuildContext ctx) => const ReceiptPage(),
-        '/item_page': (BuildContext ctx) => const ItemPage(),
+        '/item_page': (BuildContext ctx) => const ItemMenuPage(),
         '/setting_page': (BuildContext ctx) => const SettingPage(),
       },
     );

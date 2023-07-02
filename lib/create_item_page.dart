@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:pos_app/controller/create_item_controller.dart';
+import 'package:pos_app/controller/item_controller.dart';
 
 import 'value/app_string.dart';
 
@@ -13,7 +13,7 @@ class CreateItemPage extends StatefulWidget {
 
 class _CreateItemPageState extends State<CreateItemPage> {
 
-  var createItemController=Get.put(CreateItemController());
+  var createItemController=Get.put(ItemController());
   String dropdownvalue = 'Category 1';
   var categories = [
     'Category 1',

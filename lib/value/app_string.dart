@@ -17,6 +17,7 @@ class AppString{
   static const String choosePhoto="CHOOSE PHOTO";
   static const String takePhoto="TAKE PHOTO";
   static const String createCategory="Create Category";
+  static const String updateCategory="Update Category";
   static const String enterCategoryCode="Enter Category Code";
   static const String enterCategoryName="Enter Category Name";
   static const String savedCategory="Saved Category";

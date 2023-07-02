@@ -11,4 +11,12 @@ class CategoryData{
         "CategoryName":categoryName      
         };
   }
+
+  static Map<String,dynamic> updateCategory({required int categoryId, required String categoryCode,required String categoryName}){
+      return {
+        "CategoryID":categoryId,
+        "CategoryCode":categoryCode,
+        "CategoryName":categoryName      
+        };
+  }
 }

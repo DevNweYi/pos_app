@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import 'controller/create_category_controller.dart';
+import 'controller/category_controller.dart';
 import 'value/app_color.dart';
 import 'value/app_string.dart';
 
@@ -13,14 +13,29 @@ class CreateCategoryPage extends StatefulWidget {
 }
 
 class _CreateCategoryPageState extends State<CreateCategoryPage> {
-  var createCategoryController = Get.put(CreateCategoryController());
+  var categoryController = Get.put(CategoryController());
+  dynamic argumentData=Get.arguments;
+  late int categoryId;
+  bool isUpdate=false;
+
+  @override
+  void initState() {
+    categoryId = argumentData["CategoryID"];
+    if(categoryId != 0){
+      isUpdate=true;
+      categoryController.fillData(argumentData);
+    }else{
+      categoryController.clearControl();
+    }
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.grey,
       appBar: AppBar(
-        title: const Text(AppString.createCategory),
+        title: !isUpdate? const Text(AppString.createCategory) : const Text(AppString.updateCategory),
         backgroundColor: AppColor.primary,
         foregroundColor: Colors.black87,
         actions: [
@@ -30,7 +45,11 @@ class _CreateCategoryPageState extends State<CreateCategoryPage> {
               style: TextStyle(color: Colors.black87),
             ),
             onPressed: () {
-              createCategoryController.create();
+              if(!isUpdate){
+                  categoryController.insert();
+              }else{
+                  categoryController.updateCategory(categoryId);
+              }             
             },
           )
         ],
@@ -43,7 +62,7 @@ class _CreateCategoryPageState extends State<CreateCategoryPage> {
               decoration:
                   BoxDecoration(border: Border.all(color: Colors.black12),borderRadius: const BorderRadius.all(Radius.circular(5))),
               child: TextField(
-                controller: createCategoryController.codeController,
+                controller: categoryController.codeController,
                 textInputAction: TextInputAction.next,
                 decoration: const InputDecoration(
                     hintText: AppString.code,
@@ -55,7 +74,7 @@ class _CreateCategoryPageState extends State<CreateCategoryPage> {
               decoration:
                   BoxDecoration(border: Border.all(color: Colors.black12),borderRadius: const BorderRadius.all(Radius.circular(5))),
               child: TextField(
-                controller: createCategoryController.nameController,
+                controller: categoryController.nameController,
                 textInputAction: TextInputAction.done,
                 decoration: const InputDecoration(
                     hintText: AppString.name,

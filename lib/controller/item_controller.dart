@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class CreateItemController extends GetxController{
+class ItemController extends GetxController{
   final codeController=TextEditingController();
   final nameController=TextEditingController();
   final salePriceController=TextEditingController();

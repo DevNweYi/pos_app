@@ -24,6 +24,12 @@ class DatabaseHelper {
     return await _db.insert(categoryTableName, categoryData);
   }
 
+  Future<int> updateCategory(Map<String, dynamic> categoryData) async {
+    _db = await _createDatabase();
+    int categoryId=categoryData["CategoryID"];
+    return await _db.update(categoryTableName, categoryData, where: "CategoryID=$categoryId");
+  }
+
   Future<List<CategoryData>> getCategory() async {
     _db = await _createDatabase();
     List<CategoryData> lstCategory = [];
@@ -46,6 +52,18 @@ class DatabaseHelper {
     List<Map<String, dynamic>> list;
     list = await _db.rawQuery(
         "SELECT CategoryID FROM $categoryTableName WHERE CategoryCode=$categoryCode");
+    if(list.isEmpty){
+      return false;
+    }else{
+      return true;
+    }
+  }
+
+  Future<bool> isDuplicateUpdateCategoryCode(int categoryId,String categoryCode) async{
+    _db = await _createDatabase();
+    List<Map<String, dynamic>> list;
+    list = await _db.rawQuery(
+        "SELECT CategoryID FROM $categoryTableName WHERE CategoryCode=$categoryCode AND CategoryID!=$categoryId");
     if(list.isEmpty){
       return false;
     }else{
