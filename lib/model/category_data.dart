@@ -2,6 +2,7 @@ class CategoryData{
   late int categoryId;
   late String categoryCode;
   late String categoryName;
+  bool isSelected=false;
 
   CategoryData({required this.categoryId,required this.categoryCode,required this.categoryName});
 

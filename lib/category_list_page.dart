@@ -19,20 +19,19 @@ class _CategoryListPageState extends State<CategoryListPage> {
   Icon customIcon = const Icon(Icons.search);
   Widget customSearchBar = const Text(AppString.categories);
   var categoryController = Get.put(CategoryController());
-  bool isCategoryLongPressed=false;
+  bool _isCategoryLongPressed = false, _isChecked = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: AppColor.grey,
-        appBar: _defaultAppBar(),
+        appBar: _isCategoryLongPressed ? _deleteAppBar() : _defaultAppBar(),
         floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.black87,
           child: const Icon(Icons.add),
           onPressed: () {
-            Get.to(() => const CreateCategoryPage(), arguments: 
-              {"CategoryID": 0}
-            );
+            Get.to(() => const CreateCategoryPage(),
+                arguments: {"CategoryID": 0});
           },
         ),
         body: FutureBuilder<List<CategoryData>>(
@@ -58,64 +57,91 @@ class _CategoryListPageState extends State<CategoryListPage> {
         itemBuilder: (context, index) {
           CategoryData data = categoryController.lstRxCategory[index];
           return ListTile(
-            leading: !isCategoryLongPressed? const Icon(Icons.category) : Checkbox(value: false, onChanged: (bool? newValue){
-
-            }),
+            leading: !_isCategoryLongPressed
+                ? const Icon(Icons.category)
+                : Obx(
+                    () => Checkbox(
+                        value:
+                            categoryController.lstRxCategory[index].isSelected,
+                        onChanged: (bool? newValue) {
+                          categoryController.lstRxCategory[index].isSelected =
+                              newValue!;
+                          categoryController.lstRxCategory.refresh();
+                        }),
+                  ),
             title: Text(data.categoryName),
             subtitle: Text("0 Items"),
             onTap: () {
-              Get.to(() => const CreateCategoryPage(), arguments: 
-                {
-                  "CategoryID":
-                  data.categoryId,
-                  "CategoryCode":
-                  data.categoryCode,
-                  "CategoryName":
-                  data.categoryName,
-                }
-              );
+              Get.to(() => const CreateCategoryPage(), arguments: {
+                "CategoryID": data.categoryId,
+                "CategoryCode": data.categoryCode,
+                "CategoryName": data.categoryName,
+              });
             },
             onLongPress: () {
+              categoryController.lstRxCategory[index].isSelected =true;
+              categoryController.lstRxCategory.refresh();
               setState(() {
-                isCategoryLongPressed=true;
+                _isCategoryLongPressed = true;               
+                //categoryController.lstRxCategory.refresh();
               });
             },
           );
         })));
   }
 
-  PreferredSizeWidget _defaultAppBar(){
+  PreferredSizeWidget _defaultAppBar() {
     return AppBar(
-            title: customSearchBar,
-            backgroundColor: AppColor.primary,
-            foregroundColor: Colors.black87,
-            actions: [
-              IconButton(
-                icon: customIcon,
-                onPressed: (() {
-                  setState(() {
-                    if (customIcon.icon == Icons.search) {
-                      customIcon = const Icon(Icons.close);
-                      customSearchBar = const ListTile(
-                        leading: Icon(
-                          Icons.search,
-                        ),
-                        title: TextField(
-                          decoration: InputDecoration(
-                              hintText: AppString.search,
-                              border: InputBorder.none),
-                          style: TextStyle(color: Colors.black87),
-                          cursorColor: Colors.black87,
-                        ),
-                      );
-                    } else {
-                      customIcon = const Icon(Icons.search);
-                      customSearchBar = const Text(AppString.categories);
-                    }
-                  });
-                }),
-              )
-            ]);
+        title: customSearchBar,
+        backgroundColor: AppColor.primary,
+        foregroundColor: Colors.black87,
+        actions: [
+          IconButton(
+            icon: customIcon,
+            onPressed: (() {
+              setState(() {
+                if (customIcon.icon == Icons.search) {
+                  customIcon = const Icon(Icons.close);
+                  customSearchBar = const ListTile(
+                    leading: Icon(
+                      Icons.search,
+                    ),
+                    title: TextField(
+                      decoration: InputDecoration(
+                          hintText: AppString.search, border: InputBorder.none),
+                      style: TextStyle(color: Colors.black87),
+                      cursorColor: Colors.black87,
+                    ),
+                  );
+                } else {
+                  customIcon = const Icon(Icons.search);
+                  customSearchBar = const Text(AppString.categories);
+                }
+              });
+            }),
+          )
+        ]);
   }
 
+  PreferredSizeWidget _deleteAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black87,
+      leading: IconButton(
+        icon: const Icon(Icons.close),
+        onPressed: () {
+          setState(() {
+            _isCategoryLongPressed = false;
+          });
+        },
+      ),
+      title: Text("1"),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.delete),
+          onPressed: () {},
+        )
+      ],
+    );
+  }
 }
