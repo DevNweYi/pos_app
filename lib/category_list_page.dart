@@ -19,36 +19,35 @@ class _CategoryListPageState extends State<CategoryListPage> {
   Icon customIcon = const Icon(Icons.search);
   Widget customSearchBar = const Text(AppString.categories);
   var categoryController = Get.put(CategoryController());
-  bool _isCategoryLongPressed = false, _isChecked = false;
+  bool _isCategoryChecked = false;
+
+  @override
+  void initState() {
+    DatabaseHelper().getCategory().then((value) {
+      categoryController.setRxCategory(value);
+      setState(() {
+        _categoryList();
+      });
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: AppColor.grey,
-        appBar: _isCategoryLongPressed ? _deleteAppBar() : _defaultAppBar(),
-        floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.black87,
-          child: const Icon(Icons.add),
-          onPressed: () {
-            Get.to(() => const CreateCategoryPage(),
-                arguments: {"CategoryID": 0});
-          },
-        ),
-        body: FutureBuilder<List<CategoryData>>(
-          future: DatabaseHelper().getCategory(),
-          builder: (context, snapshot) {
-            if (snapshot.hasData) {
-              categoryController.lstRxCategory = snapshot.data!.obs;
-              return _categoryList();
-            } else if (snapshot.hasError) {
-              return Text(snapshot.error.toString());
-            }
-            return const Center(
-                child: CircularProgressIndicator(
-              color: AppColor.primary,
-            ));
-          },
-        ));
+        appBar: _isCategoryChecked ? _deleteAppBar() : _defaultAppBar(),
+        floatingActionButton: !_isCategoryChecked
+            ? FloatingActionButton(
+                backgroundColor: Colors.black87,
+                child: const Icon(Icons.add),
+                onPressed: () {
+                  Get.to(() => const CreateCategoryPage(),
+                      arguments: {"CategoryID": 0});
+                },
+              )
+            : Container(),
+        body: _categoryList());
   }
 
   Widget _categoryList() {
@@ -57,33 +56,48 @@ class _CategoryListPageState extends State<CategoryListPage> {
         itemBuilder: (context, index) {
           CategoryData data = categoryController.lstRxCategory[index];
           return ListTile(
-            leading: !_isCategoryLongPressed
-                ? const Icon(Icons.category)
-                : Obx(
-                    () => Checkbox(
-                        value:
-                            categoryController.lstRxCategory[index].isSelected,
-                        onChanged: (bool? newValue) {
-                          categoryController.lstRxCategory[index].isSelected =
-                              newValue!;
-                          categoryController.lstRxCategory.refresh();
-                        }),
-                  ),
+            leading: const Icon(Icons.category),
             title: Text(data.categoryName),
             subtitle: Text("0 Items"),
+            trailing: Obx(
+              () => Checkbox(
+                checkColor: Colors.white,
+                fillColor: MaterialStateProperty.resolveWith(
+                    (states) => Colors.black45),
+                value:
+                    categoryController.lstRxCategory[index].isSelected ?? false,
+                onChanged: (bool? newValue) {
+                  categoryController.checkUncheckRxCategory(
+                      index,
+                      CategoryData(
+                          categoryId: data.categoryId,
+                          categoryCode: data.categoryCode,
+                          categoryName: data.categoryName,
+                          isSelected: newValue));
+
+                  if (!_isCategoryChecked) {
+                    setState(() {
+                      _isCategoryChecked = true;
+                    });
+                  }
+
+                  if (!newValue!) {
+                    if (!categoryController.isExistCheckedRxCategory()) {
+                      setState(() {
+                        _isCategoryChecked = false;
+                      });
+                    }
+                  }
+                },
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
             onTap: () {
               Get.to(() => const CreateCategoryPage(), arguments: {
                 "CategoryID": data.categoryId,
                 "CategoryCode": data.categoryCode,
                 "CategoryName": data.categoryName,
-              });
-            },
-            onLongPress: () {
-              categoryController.lstRxCategory[index].isSelected =true;
-              categoryController.lstRxCategory.refresh();
-              setState(() {
-                _isCategoryLongPressed = true;               
-                //categoryController.lstRxCategory.refresh();
               });
             },
           );
@@ -130,15 +144,21 @@ class _CategoryListPageState extends State<CategoryListPage> {
       leading: IconButton(
         icon: const Icon(Icons.close),
         onPressed: () {
+          categoryController.unCheckRxCategory();
           setState(() {
-            _isCategoryLongPressed = false;
+            _isCategoryChecked = false;
           });
         },
       ),
-      title: Text("1"),
+      title:
+          Obx(() => Text(categoryController.getCheckedRxCategory().toString())),
       actions: [
         IconButton(
           icon: const Icon(Icons.delete),
+          onPressed: () {},
+        ),
+        IconButton(
+          icon: const Icon(Icons.checklist),
           onPressed: () {},
         )
       ],

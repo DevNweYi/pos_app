@@ -22,10 +22,7 @@ class CategoryController extends GetxController {
                   categoryName: nameController.text))
               .then((value) {
             if (value != 0) {
-              lstRxCategory.add(CategoryData(
-                  categoryId: value,
-                  categoryCode: codeController.text,
-                  categoryName: nameController.text));
+              addRxCategory(value);
               Get.snackbar(AppString.appName, AppString.savedCategory,
                   snackPosition: SnackPosition.TOP,
                   icon: const Icon(Icons.check_circle));
@@ -58,15 +55,7 @@ class CategoryController extends GetxController {
                   categoryName: nameController.text))
               .then((value) {
             if (value != 0) {
-              int index = lstRxCategory
-                  .indexWhere((element) => element.categoryId == categoryId);
-                  lstRxCategory.removeAt(index);
-              lstRxCategory.insert(
-                  index,
-                  CategoryData(
-                      categoryId: categoryId,
-                      categoryCode: codeController.text,
-                      categoryName: nameController.text));
+              removeAndInsertRxCategory(categoryId);
               Get.back();
             } else {
               Get.snackbar(AppString.appName, AppString.somethingWentWrong,
@@ -105,4 +94,66 @@ class CategoryController extends GetxController {
     codeController.text = argumentData["CategoryCode"];
     nameController.text = argumentData["CategoryName"];
   }
+
+  void addRxCategory(int categoryId) {
+    lstRxCategory.add(CategoryData(
+        categoryId: categoryId,
+        categoryCode: codeController.text,
+        categoryName: nameController.text));
+    lstRxCategory.refresh();
+  }
+
+  void removeAndInsertRxCategory(int categoryId) {
+    int index =
+        lstRxCategory.indexWhere((element) => element.categoryId == categoryId);
+    lstRxCategory.removeAt(index);
+    lstRxCategory.insert(
+        index,
+        CategoryData(
+            categoryId: categoryId,
+            categoryCode: codeController.text,
+            categoryName: nameController.text));
+    lstRxCategory.refresh();
+  }
+
+  void setRxCategory(List<CategoryData> lstCategory) {
+    lstRxCategory = lstCategory.obs;
+    lstRxCategory.refresh();
+  }
+
+  void checkUncheckRxCategory(int index, CategoryData categoryData) {
+    lstRxCategory.removeAt(index);
+    lstRxCategory.insert(
+        index,
+        CategoryData(
+            categoryId: categoryData.categoryId,
+            categoryCode: categoryData.categoryCode,
+            categoryName: categoryData.categoryName,
+            isSelected: categoryData.isSelected));
+    lstRxCategory.refresh();
+  }
+
+  void unCheckRxCategory() {
+    for (int i = 0; i < lstRxCategory.length; i++) {
+      lstRxCategory[i].isSelected = false;
+    }
+    lstRxCategory.refresh();
+  }
+
+  bool isExistCheckedRxCategory() {
+    List<CategoryData> list =
+        lstRxCategory.where((data) => data.isSelected == true).toList();
+    if (list.isNotEmpty) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  int getCheckedRxCategory(){
+    List<CategoryData> list =
+        lstRxCategory.where((data) => data.isSelected == true).toList();
+    return list.length;
+  }
+
 }

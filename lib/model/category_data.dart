@@ -2,9 +2,9 @@ class CategoryData{
   late int categoryId;
   late String categoryCode;
   late String categoryName;
-  bool isSelected=false;
+  bool? isSelected=false;
 
-  CategoryData({required this.categoryId,required this.categoryCode,required this.categoryName});
+  CategoryData({required this.categoryId,required this.categoryCode,required this.categoryName,this.isSelected});
 
   static Map<String,dynamic> insertCategory({required String categoryCode,required String categoryName}){
       return {
