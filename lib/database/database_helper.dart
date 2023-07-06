@@ -30,12 +30,19 @@ class DatabaseHelper {
     return await _db.update(categoryTableName, categoryData, where: "CategoryID=$categoryId");
   }
 
-  Future<List<CategoryData>> getCategory() async {
+  Future<List<CategoryData>> getCategory({String? searchValue}) async {
     _db = await _createDatabase();
     List<CategoryData> lstCategory = [];
     List<Map<String, dynamic>> list;
-    list = await _db.rawQuery(
+
+    if(searchValue == null || searchValue.isEmpty){
+        list = await _db.rawQuery(
         "SELECT CategoryID,CategoryCode,CategoryName FROM $categoryTableName");
+    }else{
+        list = await _db.rawQuery(
+        "SELECT CategoryID,CategoryCode,CategoryName FROM $categoryTableName WHERE CategoryName LIKE '%$searchValue%'");
+    }
+    
     for (int i = 0; i < list.length; i++) {
       Map data = list[i];
       CategoryData categoryData = CategoryData(

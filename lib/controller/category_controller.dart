@@ -8,6 +8,7 @@ import '../value/app_string.dart';
 class CategoryController extends GetxController {
   final codeController = TextEditingController();
   final nameController = TextEditingController();
+  final searchController = TextEditingController();
   RxList<CategoryData> lstRxCategory = <CategoryData>[].obs;
 
   void insert() {

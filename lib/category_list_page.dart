@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pos_app/create_category_page.dart';
@@ -116,20 +118,38 @@ class _CategoryListPageState extends State<CategoryListPage> {
               setState(() {
                 if (customIcon.icon == Icons.search) {
                   customIcon = const Icon(Icons.close);
-                  customSearchBar = const ListTile(
-                    leading: Icon(
+                  customSearchBar = ListTile(
+                    leading: const Icon(
                       Icons.search,
                     ),
                     title: TextField(
-                      decoration: InputDecoration(
+                      controller: categoryController.searchController,
+                      decoration: const InputDecoration(
                           hintText: AppString.search, border: InputBorder.none),
-                      style: TextStyle(color: Colors.black87),
+                      style: const TextStyle(color: Colors.black87),
                       cursorColor: Colors.black87,
+                      onChanged: (value) {                       
+                        DatabaseHelper()
+                            .getCategory(searchValue: value)
+                            .then((lstCategory) {
+                          categoryController.setRxCategory(lstCategory);
+                          setState(() {
+                            _categoryList();
+                          });
+                        });
+                      },
                     ),
                   );
                 } else {
                   customIcon = const Icon(Icons.search);
                   customSearchBar = const Text(AppString.categories);
+                  categoryController.searchController.text="";
+                  DatabaseHelper().getCategory().then((value) {
+                    categoryController.setRxCategory(value);
+                    setState(() {
+                      _categoryList();
+                    });
+                  });
                 }
               });
             }),
