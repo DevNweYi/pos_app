@@ -30,6 +30,11 @@ class DatabaseHelper {
     return await _db.update(categoryTableName, categoryData, where: "CategoryID=$categoryId");
   }
 
+  Future<int> deleteCategory(List<int> lstCategoryID) async {
+    _db = await _createDatabase();
+    return await _db.delete(categoryTableName, where: "CategoryID IN (${List.filled(lstCategoryID.length, '?').join(',')})",whereArgs: lstCategoryID );
+  }
+
   Future<List<CategoryData>> getCategory({String? searchValue}) async {
     _db = await _createDatabase();
     List<CategoryData> lstCategory = [];
@@ -58,7 +63,7 @@ class DatabaseHelper {
     _db = await _createDatabase();
     List<Map<String, dynamic>> list;
     list = await _db.rawQuery(
-        "SELECT CategoryID FROM $categoryTableName WHERE CategoryCode=$categoryCode");
+        "SELECT CategoryID FROM $categoryTableName WHERE CategoryCode='$categoryCode'");
     if(list.isEmpty){
       return false;
     }else{
@@ -70,7 +75,7 @@ class DatabaseHelper {
     _db = await _createDatabase();
     List<Map<String, dynamic>> list;
     list = await _db.rawQuery(
-        "SELECT CategoryID FROM $categoryTableName WHERE CategoryCode=$categoryCode AND CategoryID!=$categoryId");
+        "SELECT CategoryID FROM $categoryTableName WHERE CategoryCode='$categoryCode' AND CategoryID!=$categoryId");
     if(list.isEmpty){
       return false;
     }else{

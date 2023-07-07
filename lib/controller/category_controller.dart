@@ -73,6 +73,31 @@ class CategoryController extends GetxController {
     }
   }
 
+  Future<bool> deleteCategory() async {
+    bool result = false;
+    List<CategoryData> list =
+        lstRxCategory.where((data) => data.isSelected == true).toList();
+    List<int> lstCategoryID = [];
+    for (int i = 0; i < list.length; i++) {
+      lstCategoryID.add(list[i].categoryId);
+    }
+
+    await DatabaseHelper().deleteCategory(lstCategoryID).then((value) {
+      if (value != 0) {
+        removeCheckedRxCategory();
+        Get.snackbar(AppString.appName, AppString.deleted,
+            snackPosition: SnackPosition.TOP,
+            icon: const Icon(Icons.check_circle));
+        result = true;
+      } else {
+        Get.snackbar(AppString.appName, AppString.somethingWentWrong,
+            snackPosition: SnackPosition.TOP, icon: const Icon(Icons.error));
+        result = false;
+      }
+    });
+    return result;
+  }
+
   bool _isValidateControl() {
     if (codeController.text.isEmpty) {
       Get.snackbar(AppString.appName, AppString.enterCategoryCode,
@@ -134,9 +159,9 @@ class CategoryController extends GetxController {
     lstRxCategory.refresh();
   }
 
-  void unCheckRxCategory() {
+  void checkUncheckAllRxCategory({required bool checked}) {
     for (int i = 0; i < lstRxCategory.length; i++) {
-      lstRxCategory[i].isSelected = false;
+      lstRxCategory[i].isSelected = checked;
     }
     lstRxCategory.refresh();
   }
@@ -151,10 +176,15 @@ class CategoryController extends GetxController {
     }
   }
 
-  int getCheckedRxCategory(){
+  int getCheckedRxCategory() {
     List<CategoryData> list =
         lstRxCategory.where((data) => data.isSelected == true).toList();
     return list.length;
+  }
+
+  void removeCheckedRxCategory(){
+    lstRxCategory.removeWhere((element) => element.isSelected == true);
+    lstRxCategory.refresh();
   }
 
 }

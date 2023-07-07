@@ -21,6 +21,7 @@ class AppString{
   static const String enterCategoryCode="Enter Category Code";
   static const String enterCategoryName="Enter Category Name";
   static const String savedCategory="Saved Category";
+  static const String deleted="Deleted";
   static const String somethingWentWrong="Something Went Wrong";
   static const String duplicateCode="Existing Code! Try another Code";
 }

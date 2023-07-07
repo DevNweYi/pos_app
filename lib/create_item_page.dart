@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pos_app/controller/item_controller.dart';
+import 'package:pos_app/database/database_helper.dart';
+import 'package:pos_app/value/app_color.dart';
 
+import 'model/category_data.dart';
 import 'value/app_string.dart';
 
 class CreateItemPage extends StatefulWidget {
@@ -13,24 +16,40 @@ class CreateItemPage extends StatefulWidget {
 
 class _CreateItemPageState extends State<CreateItemPage> {
 
-  var createItemController=Get.put(ItemController());
-  String dropdownvalue = 'Category 1';
-  var categories = [
+  var itemController=Get.put(ItemController());
+  List<CategoryData> lstCategory=[];
+  String dropdownvalue="";
+  /* var categories = [
     'Category 1',
     'Category 2',
     'Category 3',
     'Category 4',
     'Category 5',
-  ];
+  ]; */
+
+  @override
+  void initState() {
+    DatabaseHelper().getCategory().then((value) {
+      setState(() {
+        lstCategory=value;
+        if(lstCategory.isNotEmpty){
+          dropdownvalue=lstCategory[0].categoryName;
+        }
+      });
+    });
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
         title: const Text(AppString.createItem),
+        backgroundColor: AppColor.primary,
+        foregroundColor: Colors.black87,
         actions: [
           TextButton(
-            child: const Text(AppString.save,style: TextStyle(color: Colors.white),),
+            child: const Text(AppString.save,style: TextStyle(color: Colors.black87),),
             onPressed: () {
               
             },
@@ -45,7 +64,7 @@ class _CreateItemPageState extends State<CreateItemPage> {
                 Container(               
                   decoration: BoxDecoration(border: Border.all(color: Colors.black12),borderRadius: const BorderRadius.all(Radius.circular(5))),
                   child: TextField(
-                    controller: createItemController.codeController,
+                    controller: itemController.codeController,
                     textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(
                       hintText: AppString.code,
@@ -57,7 +76,7 @@ class _CreateItemPageState extends State<CreateItemPage> {
                   margin: const EdgeInsets.only(top: 10),
                   decoration: BoxDecoration(border: Border.all(color: Colors.black12),borderRadius: const BorderRadius.all(Radius.circular(5))),
                   child: TextField(
-                    controller: createItemController.nameController,
+                    controller: itemController.nameController,
                     textInputAction: TextInputAction.next,
                     decoration: const InputDecoration(
                       hintText: AppString.name,
@@ -76,15 +95,21 @@ class _CreateItemPageState extends State<CreateItemPage> {
                       child: DropdownButton(
                         value: dropdownvalue,
                         icon: const Icon(Icons.keyboard_arrow_down),
-                        items: categories.map((String category) {
+                        items: lstCategory.map((e){
+                          return DropdownMenuItem(
+                              value: e.categoryId,
+                              child: Text(e.categoryName),
+                          );
+                        }).toList(),
+                        /* categories.map((String category) {
                           return DropdownMenuItem(
                             value: category,
                             child: Text(category),
                           );
-                        }).toList(),
+                        }).toList(), */
                         onChanged: (value) {
                           setState(() {
-                            dropdownvalue = value!;
+                            dropdownvalue = value.toString();
                           });
                         },
                         isExpanded: true,
@@ -96,7 +121,7 @@ class _CreateItemPageState extends State<CreateItemPage> {
                   margin: const EdgeInsets.only(top: 10),
                   decoration: BoxDecoration(border: Border.all(color: Colors.black12),borderRadius: const BorderRadius.all(Radius.circular(5))),
                   child: TextField(
-                    controller: createItemController.salePriceController,
+                    controller: itemController.salePriceController,
                     textInputAction: TextInputAction.next,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
@@ -109,7 +134,7 @@ class _CreateItemPageState extends State<CreateItemPage> {
                   margin: const EdgeInsets.only(top: 10),
                   decoration: BoxDecoration(border: Border.all(color: Colors.black12),borderRadius: const BorderRadius.all(Radius.circular(5))),
                   child: TextField(
-                    controller: createItemController.purchasePriceController,
+                    controller: itemController.purchasePriceController,
                     textInputAction: TextInputAction.next,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(
@@ -122,7 +147,7 @@ class _CreateItemPageState extends State<CreateItemPage> {
                   margin: const EdgeInsets.only(top: 10),
                   decoration: BoxDecoration(border: Border.all(color: Colors.black12),borderRadius: const BorderRadius.all(Radius.circular(5))),
                   child: TextField(
-                    controller: createItemController.costController,
+                    controller: itemController.costController,
                     textInputAction: TextInputAction.done,
                     keyboardType: TextInputType.number,
                     decoration: const InputDecoration(

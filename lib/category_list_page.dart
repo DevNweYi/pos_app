@@ -21,7 +21,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
   Icon customIcon = const Icon(Icons.search);
   Widget customSearchBar = const Text(AppString.categories);
   var categoryController = Get.put(CategoryController());
-  bool _isCategoryChecked = false;
+  bool _isCategoryChecked = false, _isAllCategoryChecked = false;
 
   @override
   void initState() {
@@ -63,7 +63,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
             subtitle: Text("0 Items"),
             trailing: Obx(
               () => Checkbox(
-                checkColor: Colors.white,
+                checkColor: AppColor.accent,
                 fillColor: MaterialStateProperty.resolveWith(
                     (states) => Colors.black45),
                 value:
@@ -128,7 +128,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                           hintText: AppString.search, border: InputBorder.none),
                       style: const TextStyle(color: Colors.black87),
                       cursorColor: Colors.black87,
-                      onChanged: (value) {                       
+                      onChanged: (value) {
                         DatabaseHelper()
                             .getCategory(searchValue: value)
                             .then((lstCategory) {
@@ -143,7 +143,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
                 } else {
                   customIcon = const Icon(Icons.search);
                   customSearchBar = const Text(AppString.categories);
-                  categoryController.searchController.text="";
+                  categoryController.searchController.text = "";
                   DatabaseHelper().getCategory().then((value) {
                     categoryController.setRxCategory(value);
                     setState(() {
@@ -164,7 +164,7 @@ class _CategoryListPageState extends State<CategoryListPage> {
       leading: IconButton(
         icon: const Icon(Icons.close),
         onPressed: () {
-          categoryController.unCheckRxCategory();
+          categoryController.checkUncheckAllRxCategory(checked: false);
           setState(() {
             _isCategoryChecked = false;
           });
@@ -175,12 +175,42 @@ class _CategoryListPageState extends State<CategoryListPage> {
       actions: [
         IconButton(
           icon: const Icon(Icons.delete),
-          onPressed: () {},
+          onPressed: () {
+            categoryController.deleteCategory().then((value) {
+              if (value) {
+                setState(() {
+                  _isCategoryChecked = false;
+                  _isAllCategoryChecked=false;
+                });
+              }
+            });
+          },
         ),
-        IconButton(
-          icon: const Icon(Icons.checklist),
-          onPressed: () {},
-        )
+        !_isAllCategoryChecked
+            ? IconButton(
+                icon: const Icon(
+                  Icons.checklist,
+                ),
+                onPressed: () {
+                  categoryController.checkUncheckAllRxCategory(checked: true);
+                  setState(() {
+                    _isAllCategoryChecked = true;
+                  });
+                },
+              )
+            : IconButton(
+                icon: const Icon(
+                  Icons.checklist,
+                  color: AppColor.accent,
+                ),
+                onPressed: () {
+                  categoryController.checkUncheckAllRxCategory(checked: false);
+                  _isCategoryChecked = false;
+                  setState(() {
+                    _isAllCategoryChecked = false;
+                  });
+                },
+              )
       ],
     );
   }
