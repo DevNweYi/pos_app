@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:pos_app/controller/item_controller.dart';
 import 'package:pos_app/database/database_helper.dart';
 import 'package:pos_app/value/app_color.dart';
@@ -19,6 +22,8 @@ class _CreateItemPageState extends State<CreateItemPage> {
   List<CategoryData> lstCategory = [];
   CategoryData dropdownvalue =
       CategoryData(categoryId: 0, categoryCode: "", categoryName: "");
+  var imagePicker;
+  var _image;
 
   @override
   void initState() {
@@ -30,6 +35,7 @@ class _CreateItemPageState extends State<CreateItemPage> {
         lstCategory = value;
       });
     });
+    imagePicker = ImagePicker();
     super.initState();
   }
 
@@ -157,16 +163,35 @@ class _CreateItemPageState extends State<CreateItemPage> {
                   children: [
                     //Image.asset(""),
                     Container(
-                      color: Colors.red,
                       height: 100,
                       width: 100,
+                      decoration: BoxDecoration(
+                        color: Colors.red[200],
+                      ),
+                      child: _image != null ?
+                      Image.file(
+                          _image,
+                          width: 200.0,
+                          height: 200.0,
+                          fit: BoxFit.fitHeight,
+                        ) :
+                        Container(
+                          height: 100,
+                          width: 100,
+                          decoration: BoxDecoration(
+                            color: Colors.red[200],
+                          ),
+                        )
                     ),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         TextButton.icon(
-                            onPressed: () {
-                              
+                            onPressed: () async {
+                              XFile image=await imagePicker.pickImage(source:"gallery", imageQuality: 50, preferredCameraDevice: CameraDevice.front);
+                              setState(() {
+                                _image=File(image.path);
+                              });
                             },
                             icon: const Icon(Icons.photo),
                             label: const Text(AppString.choosePhoto)),
