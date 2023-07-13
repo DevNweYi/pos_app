@@ -22,8 +22,8 @@ class _CreateItemPageState extends State<CreateItemPage> {
   List<CategoryData> lstCategory = [];
   CategoryData dropdownvalue =
       CategoryData(categoryId: 0, categoryCode: "", categoryName: "");
-  var imagePicker;
-  var _image;
+  dynamic imagePicker;
+  dynamic _image;
 
   @override
   void initState() {
@@ -163,40 +163,54 @@ class _CreateItemPageState extends State<CreateItemPage> {
                   children: [
                     //Image.asset(""),
                     Container(
-                      height: 100,
-                      width: 100,
-                      decoration: BoxDecoration(
-                        color: Colors.red[200],
-                      ),
-                      child: _image != null ?
-                      Image.file(
-                          _image,
-                          width: 200.0,
-                          height: 200.0,
-                          fit: BoxFit.fitHeight,
-                        ) :
-                        Container(
-                          height: 100,
-                          width: 100,
-                          decoration: BoxDecoration(
-                            color: Colors.red[200],
-                          ),
-                        )
-                    ),
+                        height: 150,
+                        width: 150,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                        ),
+                        child: _image != null
+                            ? Image.file(
+                                _image,
+                                width: 150,
+                                height: 150,
+                                fit: BoxFit.fitHeight,
+                              )
+                            : Container(
+                                height: 150,
+                                width: 150,
+                                decoration: BoxDecoration(
+                                  color: Colors.red[200],
+                                ),
+                              )),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         TextButton.icon(
                             onPressed: () async {
-                              XFile image=await imagePicker.pickImage(source:"gallery", imageQuality: 50, preferredCameraDevice: CameraDevice.front);
-                              setState(() {
-                                _image=File(image.path);
-                              });
+                              XFile? image = await imagePicker.pickImage(
+                                  source: ImageSource.gallery,
+                                  imageQuality: 50,
+                                  preferredCameraDevice: CameraDevice.front);
+                              if (image != null) {
+                                setState(() {
+                                  _image = File(image.path);
+                                });
+                              }
                             },
                             icon: const Icon(Icons.photo),
                             label: const Text(AppString.choosePhoto)),
                         TextButton.icon(
-                            onPressed: () {},
+                            onPressed: () async {
+                              XFile? image = await imagePicker.pickImage(
+                                  source: ImageSource.camera,
+                                  imageQuality: 50,
+                                  preferredCameraDevice: CameraDevice.front);
+                              if (image != null) {
+                                setState(() {
+                                  _image = File(image.path);
+                                });
+                              }
+                            },
                             icon: const Icon(Icons.photo_camera),
                             label: const Text(AppString.takePhoto)),
                       ],
