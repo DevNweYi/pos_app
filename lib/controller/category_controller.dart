@@ -100,11 +100,11 @@ class CategoryController extends GetxController {
 
   bool _isValidateControl() {
     if (codeController.text.isEmpty) {
-      Get.snackbar(AppString.appName, AppString.enterCategoryCode,
+      Get.snackbar(AppString.appName, AppString.enterCode,
           snackPosition: SnackPosition.TOP, icon: const Icon(Icons.warning));
       return false;
     } else if (nameController.text.isEmpty) {
-      Get.snackbar(AppString.appName, AppString.enterCategoryName,
+      Get.snackbar(AppString.appName, AppString.enterName,
           snackPosition: SnackPosition.TOP, icon: const Icon(Icons.warning));
       return false;
     }

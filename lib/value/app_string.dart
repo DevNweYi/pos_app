@@ -18,10 +18,12 @@ class AppString{
   static const String takePhoto="TAKE PHOTO";
   static const String createCategory="Create Category";
   static const String updateCategory="Update Category";
-  static const String enterCategoryCode="Enter Category Code";
-  static const String enterCategoryName="Enter Category Name";
+  static const String enterCode="Enter Code";
+  static const String enterName="Enter Name";
   static const String savedCategory="Saved Category";
   static const String deleted="Deleted";
   static const String somethingWentWrong="Something Went Wrong";
   static const String duplicateCode="Existing Code! Try another Code";
+  static const String notFoundCategory="Not found category";
+  static const String savedItem="Saved Item";
 }

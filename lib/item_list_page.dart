@@ -1,8 +1,15 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pos_app/create_item_page.dart';
+import 'package:pos_app/database/database_helper.dart';
 import 'package:pos_app/value/app_string.dart';
 
+import 'controller/item_controller.dart';
+import 'model/item_data.dart';
 import 'value/app_color.dart';
 
 class ItemListPage extends StatefulWidget {
@@ -13,6 +20,7 @@ class ItemListPage extends StatefulWidget {
 }
 
 class _ItemListPageState extends State<ItemListPage> {
+   var itemController = Get.put(ItemController());
   String dropdownvalue = 'All Items';
   var categories = [
     'All Items',
@@ -25,6 +33,17 @@ class _ItemListPageState extends State<ItemListPage> {
   bool isShowSearchBox = false;
 
   @override
+  void initState() {
+    DatabaseHelper().getItem().then((value){
+        itemController.setRxItem(value);
+        setState(() {
+          _itemList();
+        });
+    });
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.grey,
@@ -34,7 +53,10 @@ class _ItemListPageState extends State<ItemListPage> {
         foregroundColor: Colors.black87,
       ),
       body: Column(
-        children: [isShowSearchBox ? _searchBox() : _categorySearch()],
+        children: [
+          isShowSearchBox ? _searchBox() : _categorySearch(),
+          _itemList()
+          ],
       ),
       floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.black87,
@@ -43,6 +65,23 @@ class _ItemListPageState extends State<ItemListPage> {
             Get.to(const CreateItemPage());
           }),
     );
+  }
+
+  Widget _itemList(){
+    return Obx(() => (ListView.builder(
+        itemCount: itemController.lstRxItem.length,
+        itemBuilder: (context, index) {
+          ItemData data=itemController.lstRxItem[index];
+          Uint8List decodedBytes=Uint8List(0);
+          if(data.base64Photo.isNotEmpty){
+            decodedBytes= base64Decode(data.base64Photo);
+          }
+          return ListTile(
+            leading: Image.memory(decodedBytes,width: 200,height: 200,),
+            title: Text(data.itemName),
+          );
+        },
+    )));
   }
 
   Widget _categorySearch() {

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -52,7 +53,14 @@ class _CreateItemPageState extends State<CreateItemPage> {
               AppString.save,
               style: TextStyle(color: Colors.black87),
             ),
-            onPressed: () {},
+            onPressed: () {
+              String base64Photo="";
+              if (_image != null) {
+                final bytes = File(_image.path.toString()).readAsBytesSync();
+                base64Photo = base64Encode(bytes);
+              }
+              itemController.insert(categoryId: dropdownvalue.categoryId, base64Photo: base64Photo);
+            },
           )
         ],
       ),

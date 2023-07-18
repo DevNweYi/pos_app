@@ -2,11 +2,12 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 import '../model/category_data.dart';
+import '../model/item_data.dart';
 
 class DatabaseHelper {
   late Database _db;
   static const String categoryTableName = "Category";
-  static const String productTableName = "Product";
+  static const String itemTableName = "Item";
 
   Future<Database> _createDatabase() async {
     var databasePath = await getDatabasesPath();
@@ -15,7 +16,7 @@ class DatabaseHelper {
     await _db.execute(
         "CREATE TABLE IF NOT EXISTS $categoryTableName(CategoryID INTEGER PRIMARY KEY AUTOINCREMENT,CategoryCode TEXT,CategoryName TEXT)");
     await _db.execute(
-        "CREATE TABLE IF NOT EXISTS $productTableName(ProductID INTEGER,CategoryID INTEGER,ProductCode TEXT,ProductName TEXT,SalePrice INTEGER,PurchasePrice INTEGER,Cost INTEGER,Photo TEXT)");
+        "CREATE TABLE IF NOT EXISTS $itemTableName(ItemID INTEGER,CategoryID INTEGER,ItemCode TEXT,ItemName TEXT,SalePrice INTEGER,PurchasePrice INTEGER,Cost INTEGER,Base64Photo TEXT)");
     return _db;
   }
 
@@ -26,13 +27,17 @@ class DatabaseHelper {
 
   Future<int> updateCategory(Map<String, dynamic> categoryData) async {
     _db = await _createDatabase();
-    int categoryId=categoryData["CategoryID"];
-    return await _db.update(categoryTableName, categoryData, where: "CategoryID=$categoryId");
+    int categoryId = categoryData["CategoryID"];
+    return await _db.update(categoryTableName, categoryData,
+        where: "CategoryID=$categoryId");
   }
 
   Future<int> deleteCategory(List<int> lstCategoryID) async {
     _db = await _createDatabase();
-    return await _db.delete(categoryTableName, where: "CategoryID IN (${List.filled(lstCategoryID.length, '?').join(',')})",whereArgs: lstCategoryID );
+    return await _db.delete(categoryTableName,
+        where:
+            "CategoryID IN (${List.filled(lstCategoryID.length, '?').join(',')})",
+        whereArgs: lstCategoryID);
   }
 
   Future<List<CategoryData>> getCategory({String? searchValue}) async {
@@ -40,14 +45,14 @@ class DatabaseHelper {
     List<CategoryData> lstCategory = [];
     List<Map<String, dynamic>> list;
 
-    if(searchValue == null || searchValue.isEmpty){
-        list = await _db.rawQuery(
-        "SELECT CategoryID,CategoryCode,CategoryName FROM $categoryTableName");
-    }else{
-        list = await _db.rawQuery(
-        "SELECT CategoryID,CategoryCode,CategoryName FROM $categoryTableName WHERE CategoryName LIKE '%$searchValue%'");
+    if (searchValue == null || searchValue.isEmpty) {
+      list = await _db.rawQuery(
+          "SELECT CategoryID,CategoryCode,CategoryName FROM $categoryTableName");
+    } else {
+      list = await _db.rawQuery(
+          "SELECT CategoryID,CategoryCode,CategoryName FROM $categoryTableName WHERE CategoryName LIKE '%$searchValue%'");
     }
-    
+
     for (int i = 0; i < list.length; i++) {
       Map data = list[i];
       CategoryData categoryData = CategoryData(
@@ -59,28 +64,74 @@ class DatabaseHelper {
     return lstCategory;
   }
 
-  Future<bool> isDuplicateCategoryCode(String categoryCode) async{
+  Future<bool> isDuplicateCategoryCode(String categoryCode) async {
     _db = await _createDatabase();
     List<Map<String, dynamic>> list;
     list = await _db.rawQuery(
         "SELECT CategoryID FROM $categoryTableName WHERE CategoryCode='$categoryCode'");
-    if(list.isEmpty){
+    if (list.isEmpty) {
       return false;
-    }else{
+    } else {
       return true;
     }
   }
 
-  Future<bool> isDuplicateUpdateCategoryCode(int categoryId,String categoryCode) async{
+  Future<bool> isDuplicateUpdateCategoryCode(
+      int categoryId, String categoryCode) async {
     _db = await _createDatabase();
     List<Map<String, dynamic>> list;
     list = await _db.rawQuery(
         "SELECT CategoryID FROM $categoryTableName WHERE CategoryCode='$categoryCode' AND CategoryID!=$categoryId");
-    if(list.isEmpty){
+    if (list.isEmpty) {
       return false;
-    }else{
+    } else {
       return true;
     }
   }
 
+  Future<int> insertItem(Map<String, dynamic> itemData) async {
+    _db = await _createDatabase();
+    return await _db.insert(itemTableName, itemData);
+  }
+
+  Future<bool> isDuplicateItemCode(String itemCode) async {
+    _db = await _createDatabase();
+    List<Map<String, dynamic>> list;
+    list = await _db.rawQuery(
+        "SELECT ItemID FROM $itemTableName WHERE ItemCode='$itemCode'");
+    if (list.isEmpty) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  Future<List<ItemData>> getItem({String? searchValue}) async {
+    _db = await _createDatabase();
+    List<ItemData> lstItem = [];
+    List<Map<String, dynamic>> list;
+
+    if (searchValue == null || searchValue.isEmpty) {
+      list = await _db.rawQuery(
+          "SELECT ItemID,CategoryID,ItemCode,ItemName,SalePrice,PurchasePrice,Cost,Base64Photo FROM $itemTableName");
+    } else {
+      list = await _db.rawQuery(
+          "SELECT ItemID,CategoryID,ItemCode,ItemName,SalePrice,PurchasePrice,Cost,Base64Photo FROM $itemTableName WHERE ItemName LIKE '%$searchValue%'");
+    }
+
+    for (int i = 0; i < list.length; i++) {
+      Map data = list[i];
+      ItemData itemData = ItemData(
+          itemId: data["ItemID"],
+          categoryId: data["CategoryID"],
+          itemCode: data["ItemCode"],
+          itemName: data["ItemName"],
+          salePrice: data["SalePrice"],
+          purchasePrice: data["PurchasePrice"],
+          cost: data["Cost"],
+          base64Photo: data["Base64Photo"]);
+      lstItem.add(itemData);
+    }
+    return lstItem;
+  }
 }
