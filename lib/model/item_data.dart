@@ -7,6 +7,7 @@ class ItemData {
   late int purchasePrice;
   late int cost;
   late String base64Photo;
+  bool? isSelected=false;
 
   ItemData(
       {required this.itemId,
@@ -16,7 +17,8 @@ class ItemData {
       required this.salePrice,
       required this.purchasePrice,
       required this.cost,
-      required this.base64Photo});
+      required this.base64Photo,
+      this.isSelected});
 
   static Map<String, dynamic> insertItem(
       {required int categoryId,
@@ -27,6 +29,27 @@ class ItemData {
       required int cost,
       required String base64Photo}) {
     return {
+      "CategoryID": categoryId,
+      "ItemCode": itemCode,
+      "ItemName": itemName,
+      "SalePrice": salePrice,
+      "PurchasePrice": purchasePrice,
+      "Cost": cost,
+      "Base64Photo": base64Photo,
+    };
+  }
+
+   static Map<String, dynamic> updateItem(
+      {required int itemId,
+      required int categoryId,
+      required String itemCode,
+      required String itemName,
+      required int salePrice,
+      required int purchasePrice,
+      required int cost,
+      required String base64Photo}) {
+    return {
+      "ItemID": itemId,
       "CategoryID": categoryId,
       "ItemCode": itemCode,
       "ItemName": itemName,

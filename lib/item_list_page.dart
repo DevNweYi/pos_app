@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:pos_app/create_item_page.dart';
 import 'package:pos_app/database/database_helper.dart';
@@ -20,7 +21,7 @@ class ItemListPage extends StatefulWidget {
 }
 
 class _ItemListPageState extends State<ItemListPage> {
-   var itemController = Get.put(ItemController());
+  var itemController = Get.put(ItemController());
   String dropdownvalue = 'All Items';
   var categories = [
     'All Items',
@@ -30,15 +31,17 @@ class _ItemListPageState extends State<ItemListPage> {
     'Category 4',
     'Category 5',
   ];
-  bool isShowSearchBox = false;
+  bool isShowSearchBox = false, _isItemChecked = false;
 
   @override
   void initState() {
-    DatabaseHelper().getItem().then((value){
-        itemController.setRxItem(value);
-        setState(() {
-          _itemList();
-        });
+    EasyLoading.show();
+    DatabaseHelper().getItem().then((value) {
+      EasyLoading.dismiss();
+      itemController.setRxItem(value);
+      setState(() {
+        _itemList();
+      });
     });
     super.initState();
   }
@@ -55,8 +58,8 @@ class _ItemListPageState extends State<ItemListPage> {
       body: Column(
         children: [
           isShowSearchBox ? _searchBox() : _categorySearch(),
-          _itemList()
-          ],
+          Expanded(child: _itemList())
+        ],
       ),
       floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.black87,
@@ -67,21 +70,71 @@ class _ItemListPageState extends State<ItemListPage> {
     );
   }
 
-  Widget _itemList(){
+  Widget _itemList() {
     return Obx(() => (ListView.builder(
+        shrinkWrap: true,
         itemCount: itemController.lstRxItem.length,
         itemBuilder: (context, index) {
-          ItemData data=itemController.lstRxItem[index];
-          Uint8List decodedBytes=Uint8List(0);
-          if(data.base64Photo.isNotEmpty){
-            decodedBytes= base64Decode(data.base64Photo);
+          ItemData data = itemController.lstRxItem[index];
+          Uint8List decodedBytes = Uint8List(0);
+          if (data.base64Photo.isNotEmpty) {
+            decodedBytes = base64Decode(data.base64Photo);
           }
           return ListTile(
-            leading: Image.memory(decodedBytes,width: 200,height: 200,),
+            leading: decodedBytes.isNotEmpty
+                ? Image.memory(
+                    decodedBytes,
+                    width: 50,
+                    height: 50,
+                    fit: BoxFit.fill,
+                  )
+                : Container(
+                    height: 50,
+                    width: 50,
+                    decoration: const BoxDecoration(
+                      color: Colors.black12,
+                    ),
+                  ),
             title: Text(data.itemName),
+            subtitle: Text(data.itemCode),
+            trailing: Obx(
+              () => Checkbox(
+                checkColor: AppColor.accent,
+                fillColor: MaterialStateProperty.resolveWith(
+                    (states) => Colors.black45),
+                value: itemController.lstRxItem[index].isSelected ?? false,
+                onChanged: (bool? newValue) {
+                  itemController.checkUncheckRxItem(
+                      index,
+                      ItemData(
+                          itemId: data.itemId,
+                          categoryId: data.categoryId,
+                          itemCode: data.itemCode,
+                          itemName: data.itemName,
+                          salePrice: data.salePrice,
+                          purchasePrice: data.purchasePrice,
+                          cost: data.cost,
+                          base64Photo: data.base64Photo));
+                  if (!_isItemChecked) {
+                    setState(() {
+                      _isItemChecked = true;
+                    });
+                  }
+
+                  if (!newValue!) {
+                    if (!itemController.isExistCheckedRxItem()) {
+                      setState(() {
+                        _isItemChecked = false;
+                      });
+                    }
+                  }
+                },
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
           );
-        },
-    )));
+        })));
   }
 
   Widget _categorySearch() {
@@ -97,7 +150,10 @@ class _ItemListPageState extends State<ItemListPage> {
                 alignedDropdown: true,
                 child: DropdownButton(
                   value: dropdownvalue,
-                  icon: const Icon(Icons.keyboard_arrow_down,color: Colors.black87,),
+                  icon: const Icon(
+                    Icons.keyboard_arrow_down,
+                    color: Colors.black87,
+                  ),
                   items: categories.map((String category) {
                     return DropdownMenuItem(
                       value: category,
@@ -144,7 +200,10 @@ class _ItemListPageState extends State<ItemListPage> {
           decoration: InputDecoration(
               hintText: AppString.search,
               suffixIcon: IconButton(
-                icon: const Icon(Icons.close,color: Colors.black87,),
+                icon: const Icon(
+                  Icons.close,
+                  color: Colors.black87,
+                ),
                 onPressed: (() {
                   setState(() {
                     isShowSearchBox = false;

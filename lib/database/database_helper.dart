@@ -16,7 +16,7 @@ class DatabaseHelper {
     await _db.execute(
         "CREATE TABLE IF NOT EXISTS $categoryTableName(CategoryID INTEGER PRIMARY KEY AUTOINCREMENT,CategoryCode TEXT,CategoryName TEXT)");
     await _db.execute(
-        "CREATE TABLE IF NOT EXISTS $itemTableName(ItemID INTEGER,CategoryID INTEGER,ItemCode TEXT,ItemName TEXT,SalePrice INTEGER,PurchasePrice INTEGER,Cost INTEGER,Base64Photo TEXT)");
+        "CREATE TABLE IF NOT EXISTS $itemTableName(ItemID INTEGER PRIMARY KEY AUTOINCREMENT,CategoryID INTEGER,ItemCode TEXT,ItemName TEXT,SalePrice INTEGER,PurchasePrice INTEGER,Cost INTEGER,Base64Photo TEXT)");
     return _db;
   }
 

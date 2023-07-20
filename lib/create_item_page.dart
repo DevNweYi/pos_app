@@ -19,7 +19,7 @@ class CreateItemPage extends StatefulWidget {
 }
 
 class _CreateItemPageState extends State<CreateItemPage> {
-  var itemController = Get.put(ItemController());
+  ItemController itemController=Get.find();
   List<CategoryData> lstCategory = [];
   CategoryData dropdownvalue =
       CategoryData(categoryId: 0, categoryCode: "", categoryName: "");
@@ -54,12 +54,20 @@ class _CreateItemPageState extends State<CreateItemPage> {
               style: TextStyle(color: Colors.black87),
             ),
             onPressed: () {
-              String base64Photo="";
+              String base64Photo = "";
               if (_image != null) {
                 final bytes = File(_image.path.toString()).readAsBytesSync();
                 base64Photo = base64Encode(bytes);
               }
-              itemController.insert(categoryId: dropdownvalue.categoryId, base64Photo: base64Photo);
+              itemController
+                  .insert(
+                      categoryId: dropdownvalue.categoryId,
+                      base64Photo: base64Photo)
+                  .then((value) {
+                setState(() {
+                  _image = null;
+                });
+              });
             },
           )
         ],
@@ -169,13 +177,7 @@ class _CreateItemPageState extends State<CreateItemPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    //Image.asset(""),
                     Container(
-                        height: 150,
-                        width: 150,
-                        decoration: BoxDecoration(
-                          color: Colors.grey[200],
-                        ),
                         child: _image != null
                             ? Image.file(
                                 _image,
@@ -186,8 +188,8 @@ class _CreateItemPageState extends State<CreateItemPage> {
                             : Container(
                                 height: 150,
                                 width: 150,
-                                decoration: BoxDecoration(
-                                  color: Colors.red[200],
+                                decoration: const BoxDecoration(
+                                  color: AppColor.grey,
                                 ),
                               )),
                     Column(

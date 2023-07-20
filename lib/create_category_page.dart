@@ -13,7 +13,7 @@ class CreateCategoryPage extends StatefulWidget {
 }
 
 class _CreateCategoryPageState extends State<CreateCategoryPage> {
-  var categoryController = Get.put(CategoryController());
+  CategoryController categoryController=Get.find();
   dynamic argumentData=Get.arguments;
   late int categoryId;
   bool isUpdate=false;

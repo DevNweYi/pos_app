@@ -13,28 +13,39 @@ class ItemController extends GetxController {
   final costController = TextEditingController();
   RxList<ItemData> lstRxItem = <ItemData>[].obs;
 
-  void insert({required int categoryId, required String base64Photo}) {
+  Future<bool> insert(
+      {required int categoryId, required String base64Photo}) async {
+    bool result = false;
     if (_isValidateControl(categoryId: categoryId)) {
-      DatabaseHelper().isDuplicateItemCode(codeController.text).then((value) {
+      await DatabaseHelper()
+          .isDuplicateItemCode(codeController.text)
+          .then((value) async {
         if (!value) {
-          DatabaseHelper()
+          await DatabaseHelper()
               .insertItem(ItemData.insertItem(
                   categoryId: categoryId,
                   itemCode: codeController.text,
                   itemName: nameController.text,
-                  salePrice: int.parse(salePriceController.text),
-                  purchasePrice: int.parse(purchasePriceController.text),
-                  cost: int.parse(costController.text),
+                  salePrice: salePriceController.text.isEmpty
+                      ? 0
+                      : int.parse(salePriceController.text),
+                  purchasePrice: purchasePriceController.text.isEmpty
+                      ? 0
+                      : int.parse(purchasePriceController.text),
+                  cost: costController.text.isEmpty
+                      ? 0
+                      : int.parse(costController.text),
                   base64Photo: base64Photo))
               .then((value) {
             if (value != 0) {
+              Get.snackbar(AppString.appName, AppString.savedItem,
+                  snackPosition: SnackPosition.TOP,
+                  icon: const Icon(Icons.check_circle));
+              result = true;
               addRxItem(
                   itemId: value,
                   categoryId: categoryId,
                   base64Photo: base64Photo);
-              Get.snackbar(AppString.appName, AppString.savedItem,
-                  snackPosition: SnackPosition.TOP,
-                  icon: const Icon(Icons.check_circle));
               clearControl();
             } else {
               Get.snackbar(AppString.appName, AppString.somethingWentWrong,
@@ -49,6 +60,7 @@ class ItemController extends GetxController {
         }
       });
     }
+    return result;
   }
 
   bool _isValidateControl({required int categoryId}) {
@@ -85,9 +97,13 @@ class ItemController extends GetxController {
         categoryId: categoryId,
         itemCode: codeController.text,
         itemName: nameController.text,
-        salePrice: int.parse(salePriceController.text),
-        purchasePrice: int.parse(purchasePriceController.text),
-        cost: int.parse(costController.text),
+        salePrice: salePriceController.text.isEmpty
+            ? 0
+            : int.parse(salePriceController.text),
+        purchasePrice: purchasePriceController.text.isEmpty
+            ? 0
+            : int.parse(purchasePriceController.text),
+        cost: costController.text.isEmpty ? 0 : int.parse(costController.text),
         base64Photo: base64Photo));
     lstRxItem.refresh();
   }
@@ -95,5 +111,31 @@ class ItemController extends GetxController {
   void setRxItem(List<ItemData> lstItem) {
     lstRxItem = lstItem.obs;
     lstRxItem.refresh();
+  }
+
+  void checkUncheckRxItem(int index, ItemData itemData) {
+    lstRxItem.removeAt(index);
+    lstRxItem.insert(
+        index,
+        ItemData(
+            itemId: itemData.itemId,
+            categoryId: itemData.categoryId,
+            itemCode: itemData.itemCode,
+            itemName: itemData.itemName,
+            salePrice: itemData.salePrice,
+            purchasePrice: itemData.purchasePrice,
+            cost: itemData.cost,
+            base64Photo: itemData.base64Photo));
+    lstRxItem.refresh();
+  }
+
+  bool isExistCheckedRxItem() {
+    List<ItemData> list =
+        lstRxItem.where((data) => data.isSelected == true).toList();
+    if (list.isNotEmpty) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

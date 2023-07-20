@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:get/get.dart';
 import 'package:pos_app/item_menu_page.dart';
 import 'package:pos_app/receipt_page.dart';
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const SalePage(),
+      builder: EasyLoading.init(),
       // Register routes
       routes: {
         '/receipt_page': (BuildContext ctx) => const ReceiptPage(),
