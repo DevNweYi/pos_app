@@ -63,6 +63,31 @@ class ItemController extends GetxController {
     return result;
   }
 
+  Future<bool> deleteItem() async {
+    bool result = false;
+    List<ItemData> list =
+        lstRxItem.where((data) => data.isSelected == true).toList();
+    List<int> lstItemID = [];
+    for (int i = 0; i < list.length; i++) {
+      lstItemID.add(list[i].itemId);
+    }
+
+    await DatabaseHelper().deleteItem(lstItemID).then((value) {
+      if (value != 0) {
+        removeCheckedRxItem();
+        Get.snackbar(AppString.appName, AppString.deleted,
+            snackPosition: SnackPosition.TOP,
+            icon: const Icon(Icons.check_circle));
+        result = true;
+      } else {
+        Get.snackbar(AppString.appName, AppString.somethingWentWrong,
+            snackPosition: SnackPosition.TOP, icon: const Icon(Icons.error));
+        result = false;
+      }
+    });
+    return result;
+  }
+
   bool _isValidateControl({required int categoryId}) {
     if (codeController.text.isEmpty) {
       Get.snackbar(AppString.appName, AppString.enterCode,
@@ -125,7 +150,8 @@ class ItemController extends GetxController {
             salePrice: itemData.salePrice,
             purchasePrice: itemData.purchasePrice,
             cost: itemData.cost,
-            base64Photo: itemData.base64Photo));
+            base64Photo: itemData.base64Photo,
+            isSelected: itemData.isSelected));
     lstRxItem.refresh();
   }
 
@@ -137,5 +163,23 @@ class ItemController extends GetxController {
     } else {
       return false;
     }
+  }
+
+  void checkUncheckAllRxItem({required bool checked}) {
+    for (int i = 0; i < lstRxItem.length; i++) {
+      lstRxItem[i].isSelected = checked;
+    }
+    lstRxItem.refresh();
+  }
+
+  int getCheckedRxItem() {
+    List<ItemData> list =
+        lstRxItem.where((data) => data.isSelected == true).toList();
+    return list.length;
+  }
+
+  void removeCheckedRxItem() {
+    lstRxItem.removeWhere((element) => element.isSelected == true);
+    lstRxItem.refresh();
   }
 }

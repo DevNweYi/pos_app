@@ -106,18 +106,29 @@ class DatabaseHelper {
     }
   }
 
-  Future<List<ItemData>> getItem({String? searchValue}) async {
+  Future<List<ItemData>> getItem({String? searchValue,int? categoryId}) async {
     _db = await _createDatabase();
     List<ItemData> lstItem = [];
     List<Map<String, dynamic>> list;
 
-    if (searchValue == null || searchValue.isEmpty) {
+    if(categoryId != null && categoryId != 0){
+      list = await _db.rawQuery(
+          "SELECT ItemID,CategoryID,ItemCode,ItemName,SalePrice,PurchasePrice,Cost,Base64Photo FROM $itemTableName WHERE CategoryID=$categoryId");
+    }else if(searchValue != null && searchValue.isNotEmpty){
+      list = await _db.rawQuery(
+          "SELECT ItemID,CategoryID,ItemCode,ItemName,SalePrice,PurchasePrice,Cost,Base64Photo FROM $itemTableName WHERE ItemName LIKE '%$searchValue%'");
+    }else{
+      list = await _db.rawQuery(
+          "SELECT ItemID,CategoryID,ItemCode,ItemName,SalePrice,PurchasePrice,Cost,Base64Photo FROM $itemTableName");
+    }
+
+    /* if (searchValue == null || searchValue.isEmpty) {
       list = await _db.rawQuery(
           "SELECT ItemID,CategoryID,ItemCode,ItemName,SalePrice,PurchasePrice,Cost,Base64Photo FROM $itemTableName");
     } else {
       list = await _db.rawQuery(
           "SELECT ItemID,CategoryID,ItemCode,ItemName,SalePrice,PurchasePrice,Cost,Base64Photo FROM $itemTableName WHERE ItemName LIKE '%$searchValue%'");
-    }
+    } */
 
     for (int i = 0; i < list.length; i++) {
       Map data = list[i];
@@ -133,5 +144,13 @@ class DatabaseHelper {
       lstItem.add(itemData);
     }
     return lstItem;
+  }
+
+  Future<int> deleteItem(List<int> lstItemID) async {
+    _db = await _createDatabase();
+    return await _db.delete(itemTableName,
+        where:
+            "ItemID IN (${List.filled(lstItemID.length, '?').join(',')})",
+        whereArgs: lstItemID);
   }
 }

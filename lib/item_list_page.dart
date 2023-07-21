@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -10,6 +9,7 @@ import 'package:pos_app/database/database_helper.dart';
 import 'package:pos_app/value/app_string.dart';
 
 import 'controller/item_controller.dart';
+import 'model/category_data.dart';
 import 'model/item_data.dart';
 import 'value/app_color.dart';
 
@@ -22,20 +22,26 @@ class ItemListPage extends StatefulWidget {
 
 class _ItemListPageState extends State<ItemListPage> {
   var itemController = Get.put(ItemController());
-  String dropdownvalue = 'All Items';
-  var categories = [
-    'All Items',
-    'Category 1',
-    'Category 2',
-    'Category 3',
-    'Category 4',
-    'Category 5',
-  ];
-  bool isShowSearchBox = false, _isItemChecked = false;
+  List<CategoryData> lstCategory = [];
+  CategoryData dropdownvalue =
+      CategoryData(categoryId: 0, categoryCode: "", categoryName: "All Items");
+  bool isShowSearchBox = false,
+      _isItemChecked = false,
+      _isAllItemChecked = false;
 
   @override
   void initState() {
     EasyLoading.show();
+    DatabaseHelper().getCategory().then((value) {
+      setState(() {
+        lstCategory = value;
+        lstCategory.insert(
+            0,
+            CategoryData(
+                categoryId: 0, categoryCode: "", categoryName: "All Items"));
+        dropdownvalue = lstCategory[0];
+      });
+    });
     DatabaseHelper().getItem().then((value) {
       EasyLoading.dismiss();
       itemController.setRxItem(value);
@@ -50,11 +56,13 @@ class _ItemListPageState extends State<ItemListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.grey,
-      appBar: AppBar(
-        title: const Text(AppString.items),
-        backgroundColor: AppColor.primary,
-        foregroundColor: Colors.black87,
-      ),
+      appBar: !_isItemChecked
+          ? AppBar(
+              title: const Text(AppString.items),
+              backgroundColor: AppColor.primary,
+              foregroundColor: Colors.black87,
+            )
+          : _deleteAppBar(),
       body: Column(
         children: [
           isShowSearchBox ? _searchBox() : _categorySearch(),
@@ -114,7 +122,8 @@ class _ItemListPageState extends State<ItemListPage> {
                           salePrice: data.salePrice,
                           purchasePrice: data.purchasePrice,
                           cost: data.cost,
-                          base64Photo: data.base64Photo));
+                          base64Photo: data.base64Photo,
+                          isSelected: newValue));
                   if (!_isItemChecked) {
                     setState(() {
                       _isItemChecked = true;
@@ -154,15 +163,23 @@ class _ItemListPageState extends State<ItemListPage> {
                     Icons.keyboard_arrow_down,
                     color: Colors.black87,
                   ),
-                  items: categories.map((String category) {
-                    return DropdownMenuItem(
-                      value: category,
-                      child: Text(category),
+                  items: lstCategory.map((e) {
+                    return DropdownMenuItem<CategoryData>(
+                      value: e,
+                      child: Text(e.categoryName),
                     );
                   }).toList(),
                   onChanged: (value) {
-                    setState(() {
-                      dropdownvalue = value!;
+                    EasyLoading.show();
+                    DatabaseHelper()
+                        .getItem(categoryId: value!.categoryId)
+                        .then((lstItem) {
+                      EasyLoading.dismiss();
+                      itemController.setRxItem(lstItem);
+                      setState(() {
+                        dropdownvalue = value;
+                        _itemList();
+                      });
                     });
                   },
                   isExpanded: true,
@@ -211,6 +228,63 @@ class _ItemListPageState extends State<ItemListPage> {
                 }),
               ),
               border: const OutlineInputBorder(borderSide: BorderSide.none))),
+    );
+  }
+
+  PreferredSizeWidget _deleteAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black87,
+      leading: IconButton(
+        icon: const Icon(Icons.close),
+        onPressed: () {
+          itemController.checkUncheckAllRxItem(checked: false);
+          setState(() {
+            _isItemChecked = false;
+          });
+        },
+      ),
+      title: Obx(() => Text(itemController.getCheckedRxItem().toString())),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.delete),
+          onPressed: () {
+            itemController.deleteItem().then((value) {
+              if (value) {
+                setState(() {
+                  _isItemChecked = false;
+                  _isAllItemChecked = false;
+                });
+              }
+            });
+          },
+        ),
+        !_isAllItemChecked
+            ? IconButton(
+                icon: const Icon(
+                  Icons.checklist,
+                ),
+                onPressed: () {
+                  itemController.checkUncheckAllRxItem(checked: true);
+                  setState(() {
+                    _isAllItemChecked = true;
+                  });
+                },
+              )
+            : IconButton(
+                icon: const Icon(
+                  Icons.checklist,
+                  color: AppColor.accent,
+                ),
+                onPressed: () {
+                  itemController.checkUncheckAllRxItem(checked: false);
+                  _isAllItemChecked = false;
+                  setState(() {
+                    _isAllItemChecked = false;
+                  });
+                },
+              )
+      ],
     );
   }
 }
