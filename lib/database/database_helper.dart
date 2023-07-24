@@ -94,11 +94,30 @@ class DatabaseHelper {
     return await _db.insert(itemTableName, itemData);
   }
 
+   Future<int> updateItem(Map<String, dynamic> itemData) async {
+    _db = await _createDatabase();
+    int itemId = itemData["ItemID"];
+    return await _db.update(itemTableName, itemData,
+        where: "ItemID=$itemId");
+  }
+
   Future<bool> isDuplicateItemCode(String itemCode) async {
     _db = await _createDatabase();
     List<Map<String, dynamic>> list;
     list = await _db.rawQuery(
         "SELECT ItemID FROM $itemTableName WHERE ItemCode='$itemCode'");
+    if (list.isEmpty) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
+  Future<bool> isDuplicateUpdateItemCode(int itemId,String itemCode) async {
+    _db = await _createDatabase();
+    List<Map<String, dynamic>> list;
+    list = await _db.rawQuery(
+        "SELECT ItemID FROM $itemTableName WHERE ItemCode='$itemCode' AND ItemID!=$itemId");
     if (list.isEmpty) {
       return false;
     } else {

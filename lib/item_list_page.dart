@@ -142,6 +142,18 @@ class _ItemListPageState extends State<ItemListPage> {
                     borderRadius: BorderRadius.circular(10)),
               ),
             ),
+            onTap: () {
+              Get.to(() => const CreateItemPage(), arguments: {
+                "ItemID": data.itemId,
+                "CategoryID": data.categoryId,
+                "ItemCode": data.itemCode,
+                "ItemName": data.itemName,
+                "SalePrice": data.salePrice,
+                "PurchasePrice": data.purchasePrice,
+                "Cost": data.cost,
+                "Base64Photo": data.base64Photo,
+              });
+            },
           );
         })));
   }

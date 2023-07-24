@@ -63,6 +63,53 @@ class ItemController extends GetxController {
     return result;
   }
 
+  void updateItem(
+      {required int itemId,
+      required int categoryId,
+      required String base64Photo}) async {
+    if (_isValidateControl(categoryId: categoryId)) {
+      await DatabaseHelper()
+          .isDuplicateUpdateItemCode(itemId, codeController.text)
+          .then((value) async {
+        if (!value) {
+          await DatabaseHelper()
+              .updateItem(ItemData.updateItem(
+                  itemId: itemId,
+                  categoryId: categoryId,
+                  itemCode: codeController.text,
+                  itemName: nameController.text,
+                  salePrice: salePriceController.text.isEmpty
+                      ? 0
+                      : int.parse(salePriceController.text),
+                  purchasePrice: purchasePriceController.text.isEmpty
+                      ? 0
+                      : int.parse(purchasePriceController.text),
+                  cost: costController.text.isEmpty
+                      ? 0
+                      : int.parse(costController.text),
+                  base64Photo: base64Photo))
+              .then((value) {
+            if (value != 0) {
+              removeAndInsertRxItem(
+                  itemId: itemId,
+                  categoryId: categoryId,
+                  base64Photo: base64Photo);
+              Get.back();
+            } else {
+              Get.snackbar(AppString.appName, AppString.somethingWentWrong,
+                  snackPosition: SnackPosition.TOP,
+                  icon: const Icon(Icons.error));
+            }
+          });
+        } else {
+          Get.snackbar(AppString.appName, AppString.duplicateCode,
+              snackPosition: SnackPosition.TOP,
+              icon: const Icon(Icons.warning));
+        }
+      });
+    }
+  }
+
   Future<bool> deleteItem() async {
     bool result = false;
     List<ItemData> list =
@@ -113,6 +160,14 @@ class ItemController extends GetxController {
     costController.text = "";
   }
 
+  void fillData(dynamic argumentData) {
+    codeController.text = argumentData["ItemCode"];
+    nameController.text = argumentData["ItemName"];
+    salePriceController.text = argumentData["SalePrice"].toString();
+    purchasePriceController.text = argumentData["PurchasePrice"].toString();
+    costController.text = argumentData["Cost"].toString();
+  }
+
   void addRxItem(
       {required int itemId,
       required int categoryId,
@@ -130,6 +185,32 @@ class ItemController extends GetxController {
             : int.parse(purchasePriceController.text),
         cost: costController.text.isEmpty ? 0 : int.parse(costController.text),
         base64Photo: base64Photo));
+    lstRxItem.refresh();
+  }
+
+  void removeAndInsertRxItem(
+      {required int itemId,
+      required int categoryId,
+      required String base64Photo}) {
+    int index = lstRxItem.indexWhere((element) => element.itemId == itemId);
+    lstRxItem.removeAt(index);
+    lstRxItem.insert(
+        index,
+        ItemData(
+            itemId: itemId,
+            categoryId: categoryId,
+            itemCode: codeController.text,
+            itemName: nameController.text,
+            salePrice: salePriceController.text.isEmpty
+                ? 0
+                : int.parse(salePriceController.text),
+            purchasePrice: purchasePriceController.text.isEmpty
+                ? 0
+                : int.parse(purchasePriceController.text),
+            cost: costController.text.isEmpty
+                ? 0
+                : int.parse(costController.text),
+            base64Photo: base64Photo));
     lstRxItem.refresh();
   }
 
