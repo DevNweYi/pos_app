@@ -7,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:pos_app/create_item_page.dart';
 import 'package:pos_app/database/database_helper.dart';
 import 'package:pos_app/value/app_string.dart';
+import 'package:pos_app/widget/search_box.dart';
 
 import 'controller/item_controller.dart';
 import 'model/category_data.dart';
@@ -65,7 +66,9 @@ class _ItemListPageState extends State<ItemListPage> {
           : _deleteAppBar(),
       body: Column(
         children: [
-          isShowSearchBox ? _searchBox() : _categorySearch(),
+          isShowSearchBox
+              ? _searchBox()
+              : _categorySearch(),
           Expanded(child: _itemList())
         ],
       ),
@@ -113,24 +116,14 @@ class _ItemListPageState extends State<ItemListPage> {
                 value: itemController.lstRxItem[index].isSelected ?? false,
                 onChanged: (bool? newValue) {
                   itemController.checkUncheckRxItem(
-                      index,
-                      ItemData(
-                          itemId: data.itemId,
-                          categoryId: data.categoryId,
-                          itemCode: data.itemCode,
-                          itemName: data.itemName,
-                          salePrice: data.salePrice,
-                          purchasePrice: data.purchasePrice,
-                          cost: data.cost,
-                          base64Photo: data.base64Photo,
-                          isSelected: newValue));
+                      index: index, checked: newValue!);
                   if (!_isItemChecked) {
                     setState(() {
                       _isItemChecked = true;
                     });
                   }
 
-                  if (!newValue!) {
+                  if (!newValue) {
                     if (!itemController.isExistCheckedRxItem()) {
                       setState(() {
                         _isItemChecked = false;
@@ -222,6 +215,20 @@ class _ItemListPageState extends State<ItemListPage> {
   }
 
   Widget _searchBox() {
+    return SearchBox(
+        iconButton: IconButton(
+            onPressed: () {
+              setState(() {
+                isShowSearchBox = false;
+              });
+            },
+            icon: const Icon(
+              Icons.close,
+              color: Colors.black87,
+            )));
+  }
+
+  /* Widget _searchBox() {
     return Container(
       decoration: BoxDecoration(border: Border.all(color: Colors.black12)),
       child: TextField(
@@ -241,7 +248,7 @@ class _ItemListPageState extends State<ItemListPage> {
               ),
               border: const OutlineInputBorder(borderSide: BorderSide.none))),
     );
-  }
+  } */
 
   PreferredSizeWidget _deleteAppBar() {
     return AppBar(

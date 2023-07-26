@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -23,24 +21,26 @@ class _CreateItemPageState extends State<CreateItemPage> {
   ItemController itemController = Get.find();
   dynamic argumentData = Get.arguments;
   List<CategoryData> lstCategory = [];
-  CategoryData dropdownvalue =
-      CategoryData(categoryId: 0, categoryCode: "", categoryName: "");
+  /* CategoryData dropdownvalue =
+      CategoryData(categoryId: 0, categoryCode: "", categoryName: ""); */
   dynamic imagePicker;
-  dynamic _image;
   late int _itemId;
   bool _isUpdate = false;
-  String _base64Photo = "";
-  Uint8List _decodedBytes = Uint8List(0);
 
   @override
   void initState() {
     DatabaseHelper().getCategory().then((value) {
-      setState(() {
+      if (value.isNotEmpty) {
+        itemController.dropdownvalue.value = value[0];
+        lstCategory = value;
+      }
+
+      /* setState(() {
         if (value.isNotEmpty) {
           dropdownvalue = value[0];
         }
         lstCategory = value;
-      });
+      }); */
     });
     imagePicker = ImagePicker();
 
@@ -49,17 +49,15 @@ class _CreateItemPageState extends State<CreateItemPage> {
       if (_itemId != 0) {
         _isUpdate = true;
         itemController.fillData(argumentData);
-        _base64Photo = argumentData["Base64Photo"];
-        _decodedBytes = _decode(_base64Photo);
         int categoryId = argumentData["CategoryID"];
         for (int i = 0; i < lstCategory.length; i++) {
           if (lstCategory[i].categoryId == categoryId) {
-            dropdownvalue = lstCategory[i];
+            itemController.dropdownvalue.value = lstCategory[i];
             break;
           }
         }
       }
-    }else{
+    } else {
       itemController.clearControl();
     }
 
@@ -80,28 +78,16 @@ class _CreateItemPageState extends State<CreateItemPage> {
               style: TextStyle(color: Colors.black87),
             ),
             onPressed: () {
-              /* if (_image != null) {
-                _base64Photo = _convertBase64Photo(_image); */
-              /* final bytes = File(_image.path.toString()).readAsBytesSync();
-                base64Photo = base64Encode(bytes); */
-              //}
               if (!_isUpdate) {
                 itemController
                     .insert(
-                        categoryId: dropdownvalue.categoryId,
-                        base64Photo: _base64Photo)
-                    .then((value) {
-                  _image = null;
-                  _base64Photo = "";
-                  setState(() {
-                    _decodedBytes = Uint8List(0);
-                  });
-                });
+                        categoryId:
+                            itemController.dropdownvalue.value.categoryId)
+                    .then((value) {});
               } else {
                 itemController.updateItem(
                     itemId: _itemId,
-                    categoryId: dropdownvalue.categoryId,
-                    base64Photo: _base64Photo);
+                    categoryId: itemController.dropdownvalue.value.categoryId);
               }
             },
           )
@@ -146,22 +132,25 @@ class _CreateItemPageState extends State<CreateItemPage> {
                 child: DropdownButtonHideUnderline(
                   child: ButtonTheme(
                     alignedDropdown: true,
-                    child: DropdownButton(
-                      value: dropdownvalue,
-                      icon: const Icon(Icons.keyboard_arrow_down),
-                      items: lstCategory.map((e) {
-                        return DropdownMenuItem<CategoryData>(
-                          value: e,
-                          child: Text(e.categoryName),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          dropdownvalue = value!;
-                        });
-                      },
-                      isExpanded: true,
-                    ),
+                    child: Obx(() {
+                      return DropdownButton<CategoryData>(
+                        value: itemController.dropdownvalue.value,
+                        icon: const Icon(Icons.keyboard_arrow_down),
+                        items: lstCategory.map((e) {
+                          return DropdownMenuItem<CategoryData>(
+                            value: e,
+                            child: Text(e.categoryName),
+                          );
+                        }).toList(),
+                        onChanged: (data) {
+                          itemController.dropdownvalue.value = data!;
+                          /* setState(() {
+                            dropdownvalue = value!;
+                          }); */
+                        },
+                        isExpanded: true,
+                      );
+                    }),
                   ),
                 ),
               ),
@@ -212,35 +201,23 @@ class _CreateItemPageState extends State<CreateItemPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                        child: _decodedBytes.isNotEmpty
-                            ? Image.memory(
-                                _decodedBytes,
-                                width: 150,
-                                height: 150,
-                                fit: BoxFit.fitHeight,
-                              )
-                            : Container(
-                                height: 150,
-                                width: 150,
-                                decoration: const BoxDecoration(
-                                  color: AppColor.grey,
-                                ),
-                              )),
-                    /* _image != null
-                            ? Image.file(
-                                _image,
-                                width: 150,
-                                height: 150,
-                                fit: BoxFit.fitHeight,
-                              )
-                            : Container(
-                                height: 150,
-                                width: 150,
-                                decoration: const BoxDecoration(
-                                  color: AppColor.grey,
-                                ),
-                              )), */
+                    Obx(() {
+                      return Container(
+                          child: itemController.decodedBytes.value.isNotEmpty
+                              ? Image.memory(
+                                  itemController.decodedBytes.value,
+                                  width: 150,
+                                  height: 150,
+                                  fit: BoxFit.fitHeight,
+                                )
+                              : Container(
+                                  height: 150,
+                                  width: 150,
+                                  decoration: const BoxDecoration(
+                                    color: AppColor.grey,
+                                  ),
+                                ));
+                    }),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -251,11 +228,11 @@ class _CreateItemPageState extends State<CreateItemPage> {
                                   imageQuality: 50,
                                   preferredCameraDevice: CameraDevice.front);
                               if (image != null) {
-                                _image = File(image.path);
-                                _base64Photo = _convertBase64Photo(_image);
-                                setState(() {
-                                  _decodedBytes = _decode(_base64Photo);
-                                });
+                                itemController.base64Photo = itemController
+                                    .convertBase64Photo(File(image.path));
+                                itemController.decodedBytes.value =
+                                    itemController
+                                        .decode(itemController.base64Photo);
                               }
                             },
                             icon: const Icon(Icons.photo),
@@ -267,11 +244,11 @@ class _CreateItemPageState extends State<CreateItemPage> {
                                   imageQuality: 50,
                                   preferredCameraDevice: CameraDevice.front);
                               if (image != null) {
-                                _image = File(image.path);
-                                _base64Photo = _convertBase64Photo(_image);
-                                setState(() {
-                                  _decodedBytes = _decode(_base64Photo);
-                                });
+                                itemController.base64Photo = itemController
+                                    .convertBase64Photo(File(image.path));
+                                itemController.decodedBytes.value =
+                                    itemController
+                                        .decode(itemController.base64Photo);
                               }
                             },
                             icon: const Icon(Icons.photo_camera),
@@ -286,16 +263,5 @@ class _CreateItemPageState extends State<CreateItemPage> {
         ),
       ),
     );
-  }
-
-  String _convertBase64Photo(dynamic image) {
-    final bytes = File(_image.path.toString()).readAsBytesSync();
-    String base64Photo = base64Encode(bytes);
-    return base64Photo;
-  }
-
-  Uint8List _decode(String base64Photo) {
-    Uint8List decodedBytes = base64Decode(base64Photo);
-    return decodedBytes;
   }
 }

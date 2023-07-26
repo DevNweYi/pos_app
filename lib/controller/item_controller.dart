@@ -1,7 +1,12 @@
+import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:pos_app/database/database_helper.dart';
 
+import '../model/category_data.dart';
 import '../model/item_data.dart';
 import '../value/app_string.dart';
 
@@ -11,10 +16,13 @@ class ItemController extends GetxController {
   final salePriceController = TextEditingController();
   final purchasePriceController = TextEditingController();
   final costController = TextEditingController();
+  String base64Photo = "";
+  Rx<Uint8List> decodedBytes = Uint8List(0).obs;
+  Rx<CategoryData> dropdownvalue =
+      CategoryData(categoryId: 0, categoryCode: "", categoryName: "").obs;
   RxList<ItemData> lstRxItem = <ItemData>[].obs;
 
-  Future<bool> insert(
-      {required int categoryId, required String base64Photo}) async {
+  Future<bool> insert({required int categoryId}) async {
     bool result = false;
     if (_isValidateControl(categoryId: categoryId)) {
       await DatabaseHelper()
@@ -63,10 +71,7 @@ class ItemController extends GetxController {
     return result;
   }
 
-  void updateItem(
-      {required int itemId,
-      required int categoryId,
-      required String base64Photo}) async {
+  void updateItem({required int itemId, required int categoryId}) async {
     if (_isValidateControl(categoryId: categoryId)) {
       await DatabaseHelper()
           .isDuplicateUpdateItemCode(itemId, codeController.text)
@@ -158,6 +163,8 @@ class ItemController extends GetxController {
     salePriceController.text = "";
     purchasePriceController.text = "";
     costController.text = "";
+    base64Photo = "";
+    decodedBytes.value = Uint8List(0);
   }
 
   void fillData(dynamic argumentData) {
@@ -166,6 +173,8 @@ class ItemController extends GetxController {
     salePriceController.text = argumentData["SalePrice"].toString();
     purchasePriceController.text = argumentData["PurchasePrice"].toString();
     costController.text = argumentData["Cost"].toString();
+    base64Photo = argumentData["Base64Photo"];
+    decodedBytes.value = decode(base64Photo);
   }
 
   void addRxItem(
@@ -219,20 +228,8 @@ class ItemController extends GetxController {
     lstRxItem.refresh();
   }
 
-  void checkUncheckRxItem(int index, ItemData itemData) {
-    lstRxItem.removeAt(index);
-    lstRxItem.insert(
-        index,
-        ItemData(
-            itemId: itemData.itemId,
-            categoryId: itemData.categoryId,
-            itemCode: itemData.itemCode,
-            itemName: itemData.itemName,
-            salePrice: itemData.salePrice,
-            purchasePrice: itemData.purchasePrice,
-            cost: itemData.cost,
-            base64Photo: itemData.base64Photo,
-            isSelected: itemData.isSelected));
+  void checkUncheckRxItem({required int index, required bool checked}) {
+    lstRxItem[index].isSelected = checked;
     lstRxItem.refresh();
   }
 
@@ -262,5 +259,16 @@ class ItemController extends GetxController {
   void removeCheckedRxItem() {
     lstRxItem.removeWhere((element) => element.isSelected == true);
     lstRxItem.refresh();
+  }
+
+  String convertBase64Photo(dynamic image) {
+    final bytes = File(image.path.toString()).readAsBytesSync();
+    String base64Photo = base64Encode(bytes);
+    return base64Photo;
+  }
+
+  Uint8List decode(String base64Photo) {
+    Uint8List decodedBytes = base64Decode(base64Photo);
+    return decodedBytes;
   }
 }
