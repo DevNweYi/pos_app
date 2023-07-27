@@ -20,18 +20,19 @@ class ItemController extends GetxController {
   Rx<Uint8List> decodedBytes = Uint8List(0).obs;
   Rx<CategoryData> dropdownvalue =
       CategoryData(categoryId: 0, categoryCode: "", categoryName: "").obs;
+  RxList<CategoryData> lstCategory = <CategoryData>[].obs;
   RxList<ItemData> lstRxItem = <ItemData>[].obs;
 
-  Future<bool> insert({required int categoryId}) async {
+  Future<bool> insert() async {
     bool result = false;
-    if (_isValidateControl(categoryId: categoryId)) {
+    if (_isValidateControl()) {
       await DatabaseHelper()
           .isDuplicateItemCode(codeController.text)
           .then((value) async {
         if (!value) {
           await DatabaseHelper()
               .insertItem(ItemData.insertItem(
-                  categoryId: categoryId,
+                  categoryId: dropdownvalue.value.categoryId,
                   itemCode: codeController.text,
                   itemName: nameController.text,
                   salePrice: salePriceController.text.isEmpty
@@ -52,7 +53,7 @@ class ItemController extends GetxController {
               result = true;
               addRxItem(
                   itemId: value,
-                  categoryId: categoryId,
+                  categoryId: dropdownvalue.value.categoryId,
                   base64Photo: base64Photo);
               clearControl();
             } else {
@@ -71,8 +72,8 @@ class ItemController extends GetxController {
     return result;
   }
 
-  void updateItem({required int itemId, required int categoryId}) async {
-    if (_isValidateControl(categoryId: categoryId)) {
+  void updateItem({required int itemId}) async {
+    if (_isValidateControl()) {
       await DatabaseHelper()
           .isDuplicateUpdateItemCode(itemId, codeController.text)
           .then((value) async {
@@ -80,7 +81,7 @@ class ItemController extends GetxController {
           await DatabaseHelper()
               .updateItem(ItemData.updateItem(
                   itemId: itemId,
-                  categoryId: categoryId,
+                  categoryId: dropdownvalue.value.categoryId,
                   itemCode: codeController.text,
                   itemName: nameController.text,
                   salePrice: salePriceController.text.isEmpty
@@ -97,7 +98,7 @@ class ItemController extends GetxController {
             if (value != 0) {
               removeAndInsertRxItem(
                   itemId: itemId,
-                  categoryId: categoryId,
+                  categoryId: dropdownvalue.value.categoryId,
                   base64Photo: base64Photo);
               Get.back();
             } else {
@@ -140,7 +141,7 @@ class ItemController extends GetxController {
     return result;
   }
 
-  bool _isValidateControl({required int categoryId}) {
+  bool _isValidateControl() {
     if (codeController.text.isEmpty) {
       Get.snackbar(AppString.appName, AppString.enterCode,
           snackPosition: SnackPosition.TOP, icon: const Icon(Icons.warning));
@@ -149,7 +150,7 @@ class ItemController extends GetxController {
       Get.snackbar(AppString.appName, AppString.enterName,
           snackPosition: SnackPosition.TOP, icon: const Icon(Icons.warning));
       return false;
-    } else if (categoryId == 0) {
+    } else if (dropdownvalue.value.categoryId == 0) {
       Get.snackbar(AppString.appName, AppString.notFoundCategory,
           snackPosition: SnackPosition.TOP, icon: const Icon(Icons.warning));
       return false;
@@ -165,6 +166,9 @@ class ItemController extends GetxController {
     costController.text = "";
     base64Photo = "";
     decodedBytes.value = Uint8List(0);
+    if (lstCategory.isNotEmpty) {
+      dropdownvalue.value = lstCategory[0];
+    }
   }
 
   void fillData(dynamic argumentData) {
@@ -175,6 +179,14 @@ class ItemController extends GetxController {
     costController.text = argumentData["Cost"].toString();
     base64Photo = argumentData["Base64Photo"];
     decodedBytes.value = decode(base64Photo);
+
+    int categoryId = argumentData["CategoryID"];
+    for (int i = 0; i < lstCategory.length; i++) {
+      if (lstCategory[i].categoryId == categoryId) {
+        dropdownvalue.value = lstCategory[i];
+        break;
+      }
+    }
   }
 
   void addRxItem(

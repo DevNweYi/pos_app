@@ -20,9 +20,6 @@ class CreateItemPage extends StatefulWidget {
 class _CreateItemPageState extends State<CreateItemPage> {
   ItemController itemController = Get.find();
   dynamic argumentData = Get.arguments;
-  List<CategoryData> lstCategory = [];
-  /* CategoryData dropdownvalue =
-      CategoryData(categoryId: 0, categoryCode: "", categoryName: ""); */
   dynamic imagePicker;
   late int _itemId;
   bool _isUpdate = false;
@@ -31,36 +28,21 @@ class _CreateItemPageState extends State<CreateItemPage> {
   void initState() {
     DatabaseHelper().getCategory().then((value) {
       if (value.isNotEmpty) {
-        itemController.dropdownvalue.value = value[0];
-        lstCategory = value;
-      }
+        itemController.lstCategory.value = value;
 
-      /* setState(() {
-        if (value.isNotEmpty) {
-          dropdownvalue = value[0];
+        if (argumentData != null) {
+          // edit
+          _itemId = argumentData["ItemID"];
+          if (_itemId != 0) {
+            _isUpdate = true;
+            itemController.fillData(argumentData);
+          }
+        } else {
+          itemController.clearControl();
         }
-        lstCategory = value;
-      }); */
+      }
     });
     imagePicker = ImagePicker();
-
-    if (argumentData != null) {
-      _itemId = argumentData["ItemID"];
-      if (_itemId != 0) {
-        _isUpdate = true;
-        itemController.fillData(argumentData);
-        int categoryId = argumentData["CategoryID"];
-        for (int i = 0; i < lstCategory.length; i++) {
-          if (lstCategory[i].categoryId == categoryId) {
-            itemController.dropdownvalue.value = lstCategory[i];
-            break;
-          }
-        }
-      }
-    } else {
-      itemController.clearControl();
-    }
-
     super.initState();
   }
 
@@ -79,15 +61,9 @@ class _CreateItemPageState extends State<CreateItemPage> {
             ),
             onPressed: () {
               if (!_isUpdate) {
-                itemController
-                    .insert(
-                        categoryId:
-                            itemController.dropdownvalue.value.categoryId)
-                    .then((value) {});
+                itemController.insert().then((value) {});
               } else {
-                itemController.updateItem(
-                    itemId: _itemId,
-                    categoryId: itemController.dropdownvalue.value.categoryId);
+                itemController.updateItem(itemId: _itemId);
               }
             },
           )
@@ -136,7 +112,7 @@ class _CreateItemPageState extends State<CreateItemPage> {
                       return DropdownButton<CategoryData>(
                         value: itemController.dropdownvalue.value,
                         icon: const Icon(Icons.keyboard_arrow_down),
-                        items: lstCategory.map((e) {
+                        items: itemController.lstCategory.map((e) {
                           return DropdownMenuItem<CategoryData>(
                             value: e,
                             child: Text(e.categoryName),
@@ -144,9 +120,6 @@ class _CreateItemPageState extends State<CreateItemPage> {
                         }).toList(),
                         onChanged: (data) {
                           itemController.dropdownvalue.value = data!;
-                          /* setState(() {
-                            dropdownvalue = value!;
-                          }); */
                         },
                         isExpanded: true,
                       );

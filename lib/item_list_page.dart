@@ -23,9 +23,9 @@ class ItemListPage extends StatefulWidget {
 
 class _ItemListPageState extends State<ItemListPage> {
   var itemController = Get.put(ItemController());
-  List<CategoryData> lstCategory = [];
+  /* List<CategoryData> lstCategory = [];
   CategoryData dropdownvalue =
-      CategoryData(categoryId: 0, categoryCode: "", categoryName: "All Items");
+      CategoryData(categoryId: 0, categoryCode: "", categoryName: "All Items"); */
   bool isShowSearchBox = false,
       _isItemChecked = false,
       _isAllItemChecked = false;
@@ -34,21 +34,30 @@ class _ItemListPageState extends State<ItemListPage> {
   void initState() {
     EasyLoading.show();
     DatabaseHelper().getCategory().then((value) {
-      setState(() {
+      if(value.isNotEmpty){
+        itemController.lstCategory.value=value;
+        itemController.lstCategory.insert(
+              0,
+              CategoryData(
+                  categoryId: 0, categoryCode: "", categoryName: "All Items"));
+        itemController.dropdownvalue.value=itemController.lstCategory[0];
+      }
+      
+      /* setState(() {
         lstCategory = value;
         lstCategory.insert(
             0,
             CategoryData(
                 categoryId: 0, categoryCode: "", categoryName: "All Items"));
         dropdownvalue = lstCategory[0];
-      });
+      }); */
     });
     DatabaseHelper().getItem().then((value) {
       EasyLoading.dismiss();
       itemController.setRxItem(value);
-      setState(() {
+      /* setState(() {
         _itemList();
-      });
+      }); */
     });
     super.initState();
   }
@@ -163,12 +172,12 @@ class _ItemListPageState extends State<ItemListPage> {
               child: ButtonTheme(
                 alignedDropdown: true,
                 child: DropdownButton(
-                  value: dropdownvalue,
+                  value: itemController.dropdownvalue.value,
                   icon: const Icon(
                     Icons.keyboard_arrow_down,
                     color: Colors.black87,
                   ),
-                  items: lstCategory.map((e) {
+                  items: itemController.lstCategory.map((e) {
                     return DropdownMenuItem<CategoryData>(
                       value: e,
                       child: Text(e.categoryName),
@@ -181,10 +190,11 @@ class _ItemListPageState extends State<ItemListPage> {
                         .then((lstItem) {
                       EasyLoading.dismiss();
                       itemController.setRxItem(lstItem);
-                      setState(() {
+                      itemController.dropdownvalue.value=value;
+                      /* setState(() {
                         dropdownvalue = value;
                         _itemList();
-                      });
+                      }); */
                     });
                   },
                   isExpanded: true,
