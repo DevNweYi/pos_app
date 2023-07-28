@@ -19,7 +19,7 @@ class ItemController extends GetxController {
   String base64Photo = "";
   Rx<Uint8List> decodedBytes = Uint8List(0).obs;
   Rx<CategoryData> dropdownvalue =
-      CategoryData(categoryId: 0, categoryCode: "", categoryName: "").obs;
+      CategoryData(categoryId: 0, categoryCode: "", categoryName: "All Items").obs;
   RxList<CategoryData> lstCategory = <CategoryData>[].obs;
   RxList<ItemData> lstRxItem = <ItemData>[].obs;
 
@@ -236,7 +236,7 @@ class ItemController extends GetxController {
   }
 
   void setRxItem(List<ItemData> lstItem) {
-    lstRxItem = lstItem.obs;
+    lstRxItem.value = lstItem.obs;
     lstRxItem.refresh();
   }
 

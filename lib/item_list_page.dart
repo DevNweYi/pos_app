@@ -23,9 +23,6 @@ class ItemListPage extends StatefulWidget {
 
 class _ItemListPageState extends State<ItemListPage> {
   var itemController = Get.put(ItemController());
-  /* List<CategoryData> lstCategory = [];
-  CategoryData dropdownvalue =
-      CategoryData(categoryId: 0, categoryCode: "", categoryName: "All Items"); */
   bool isShowSearchBox = false,
       _isItemChecked = false,
       _isAllItemChecked = false;
@@ -34,31 +31,20 @@ class _ItemListPageState extends State<ItemListPage> {
   void initState() {
     EasyLoading.show();
     DatabaseHelper().getCategory().then((value) {
-      if(value.isNotEmpty){
-        itemController.lstCategory.value=value;
-        itemController.lstCategory.insert(
-              0,
-              CategoryData(
-                  categoryId: 0, categoryCode: "", categoryName: "All Items"));
-        itemController.dropdownvalue.value=itemController.lstCategory[0];
+      EasyLoading.dismiss();
+      if (value.isNotEmpty) {
+        itemController.lstCategory.value = value;
+        itemController.lstCategory
+            .insert(0, itemController.dropdownvalue.value);
       }
-      
-      /* setState(() {
-        lstCategory = value;
-        lstCategory.insert(
-            0,
-            CategoryData(
-                categoryId: 0, categoryCode: "", categoryName: "All Items"));
-        dropdownvalue = lstCategory[0];
-      }); */
     });
-    DatabaseHelper().getItem().then((value) {
+    /* DatabaseHelper().getItem().then((value) {
       EasyLoading.dismiss();
       itemController.setRxItem(value);
       /* setState(() {
         _itemList();
       }); */
-    });
+    }); */
     super.initState();
   }
 
@@ -75,10 +61,20 @@ class _ItemListPageState extends State<ItemListPage> {
           : _deleteAppBar(),
       body: Column(
         children: [
-          isShowSearchBox
-              ? _searchBox()
-              : _categorySearch(),
-          Expanded(child: _itemList())
+          isShowSearchBox ? _searchBox() : _categorySearch(),
+          //Expanded(child: _itemList()),
+          FutureBuilder<List<ItemData>>(
+            future: DatabaseHelper().getItem(),
+            builder: (context,snapshot){
+                if(snapshot.hasData){
+                  //itemController.lstRxItem.value=snapshot.data!;
+                    itemController.setRxItem(snapshot.data!);
+                    return Expanded(child: _itemList());
+                }else if(snapshot.hasError){
+                    return Text(snapshot.error.toString());
+                }
+                return const CircularProgressIndicator();
+          })
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -171,33 +167,37 @@ class _ItemListPageState extends State<ItemListPage> {
             child: DropdownButtonHideUnderline(
               child: ButtonTheme(
                 alignedDropdown: true,
-                child: DropdownButton(
-                  value: itemController.dropdownvalue.value,
-                  icon: const Icon(
-                    Icons.keyboard_arrow_down,
-                    color: Colors.black87,
-                  ),
-                  items: itemController.lstCategory.map((e) {
-                    return DropdownMenuItem<CategoryData>(
-                      value: e,
-                      child: Text(e.categoryName),
+                child: Obx(
+                  () {
+                    return DropdownButton(
+                      value: itemController.dropdownvalue.value,
+                      icon: const Icon(
+                        Icons.keyboard_arrow_down,
+                        color: Colors.black87,
+                      ),
+                      items: itemController.lstCategory.map((e) {
+                        return DropdownMenuItem<CategoryData>(
+                          value: e,
+                          child: Text(e.categoryName),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        EasyLoading.show();
+                        DatabaseHelper()
+                            .getItem(categoryId: value!.categoryId)
+                            .then((lstItem) {
+                          EasyLoading.dismiss();
+                          itemController.setRxItem(lstItem);
+                          itemController.dropdownvalue.value = value;
+                          /* setState(() {
+                          dropdownvalue = value;
+                          _itemList();
+                        }); */
+                        });
+                      },
+                      isExpanded: true,
                     );
-                  }).toList(),
-                  onChanged: (value) {
-                    EasyLoading.show();
-                    DatabaseHelper()
-                        .getItem(categoryId: value!.categoryId)
-                        .then((lstItem) {
-                      EasyLoading.dismiss();
-                      itemController.setRxItem(lstItem);
-                      itemController.dropdownvalue.value=value;
-                      /* setState(() {
-                        dropdownvalue = value;
-                        _itemList();
-                      }); */
-                    });
                   },
-                  isExpanded: true,
                 ),
               ),
             ),

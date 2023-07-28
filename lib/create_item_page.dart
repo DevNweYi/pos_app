@@ -29,6 +29,7 @@ class _CreateItemPageState extends State<CreateItemPage> {
     DatabaseHelper().getCategory().then((value) {
       if (value.isNotEmpty) {
         itemController.lstCategory.value = value;
+        itemController.dropdownvalue.value=value[0];
 
         if (argumentData != null) {
           // edit
