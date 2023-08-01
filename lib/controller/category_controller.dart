@@ -10,6 +10,9 @@ class CategoryController extends GetxController {
   final nameController = TextEditingController();
   final searchController = TextEditingController();
   RxList<CategoryData> lstRxCategory = <CategoryData>[].obs;
+  RxBool isCategoryChecked=false.obs;
+  RxBool isAllCategoryChecked=false.obs;
+  RxBool isSearchCategory=false.obs;
 
   void insert() {
     if (_isValidateControl()) {
@@ -143,7 +146,7 @@ class CategoryController extends GetxController {
   }
 
   void setRxCategory(List<CategoryData> lstCategory) {
-    lstRxCategory = lstCategory.obs;
+    lstRxCategory.value = lstCategory.obs;
     lstRxCategory.refresh();
   }
 
@@ -155,7 +158,8 @@ class CategoryController extends GetxController {
             categoryId: categoryData.categoryId,
             categoryCode: categoryData.categoryCode,
             categoryName: categoryData.categoryName,
-            isSelected: categoryData.isSelected));
+            isSelected: categoryData.isSelected,
+            totalItem: categoryData.totalItem));
     lstRxCategory.refresh();
   }
 

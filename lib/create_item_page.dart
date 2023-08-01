@@ -28,8 +28,8 @@ class _CreateItemPageState extends State<CreateItemPage> {
   void initState() {
     DatabaseHelper().getCategory().then((value) {
       if (value.isNotEmpty) {
-        itemController.lstCategory.value = value;
-        itemController.dropdownvalue.value=value[0];
+        itemController.lstCategoryInCreate.value = value;
+        itemController.createDefaultCatVal.value=value[0];
 
         if (argumentData != null) {
           // edit
@@ -111,16 +111,16 @@ class _CreateItemPageState extends State<CreateItemPage> {
                     alignedDropdown: true,
                     child: Obx(() {
                       return DropdownButton<CategoryData>(
-                        value: itemController.dropdownvalue.value,
+                        value: itemController.createDefaultCatVal.value,
                         icon: const Icon(Icons.keyboard_arrow_down),
-                        items: itemController.lstCategory.map((e) {
+                        items: itemController.lstCategoryInCreate.map((e) {
                           return DropdownMenuItem<CategoryData>(
                             value: e,
                             child: Text(e.categoryName),
                           );
                         }).toList(),
                         onChanged: (data) {
-                          itemController.dropdownvalue.value = data!;
+                          itemController.createDefaultCatVal.value = data!;
                         },
                         isExpanded: true,
                       );

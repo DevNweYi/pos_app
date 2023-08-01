@@ -55,10 +55,14 @@ class DatabaseHelper {
 
     for (int i = 0; i < list.length; i++) {
       Map data = list[i];
+      int categoryId=data["CategoryID"];
+      var count=await _db.rawQuery("SELECT COUNT(ItemID) AS TotalItem FROM $itemTableName WHERE CategoryID=$categoryId");
+      int? totalItem = Sqflite.firstIntValue(count);
       CategoryData categoryData = CategoryData(
           categoryId: data["CategoryID"],
           categoryCode: data["CategoryCode"],
-          categoryName: data["CategoryName"]);
+          categoryName: data["CategoryName"],
+          totalItem: totalItem);
       lstCategory.add(categoryData);
     }
     return lstCategory;
@@ -140,14 +144,6 @@ class DatabaseHelper {
       list = await _db.rawQuery(
           "SELECT ItemID,CategoryID,ItemCode,ItemName,SalePrice,PurchasePrice,Cost,Base64Photo FROM $itemTableName");
     }
-
-    /* if (searchValue == null || searchValue.isEmpty) {
-      list = await _db.rawQuery(
-          "SELECT ItemID,CategoryID,ItemCode,ItemName,SalePrice,PurchasePrice,Cost,Base64Photo FROM $itemTableName");
-    } else {
-      list = await _db.rawQuery(
-          "SELECT ItemID,CategoryID,ItemCode,ItemName,SalePrice,PurchasePrice,Cost,Base64Photo FROM $itemTableName WHERE ItemName LIKE '%$searchValue%'");
-    } */
 
     for (int i = 0; i < list.length; i++) {
       Map data = list[i];

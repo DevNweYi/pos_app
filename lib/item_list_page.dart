@@ -7,7 +7,6 @@ import 'package:get/get.dart';
 import 'package:pos_app/create_item_page.dart';
 import 'package:pos_app/database/database_helper.dart';
 import 'package:pos_app/value/app_string.dart';
-import 'package:pos_app/widget/search_box.dart';
 
 import 'controller/item_controller.dart';
 import 'model/category_data.dart';
@@ -23,9 +22,6 @@ class ItemListPage extends StatefulWidget {
 
 class _ItemListPageState extends State<ItemListPage> {
   var itemController = Get.put(ItemController());
-  bool isShowSearchBox = false,
-      _isItemChecked = false,
-      _isAllItemChecked = false;
 
   @override
   void initState() {
@@ -33,18 +29,11 @@ class _ItemListPageState extends State<ItemListPage> {
     DatabaseHelper().getCategory().then((value) {
       EasyLoading.dismiss();
       if (value.isNotEmpty) {
-        itemController.lstCategory.value = value;
-        itemController.lstCategory
-            .insert(0, itemController.dropdownvalue.value);
+        itemController.lstCategoryInList.value = value;
+        itemController.lstCategoryInList
+            .insert(0, itemController.listDefaultCatVal.value);
       }
     });
-    /* DatabaseHelper().getItem().then((value) {
-      EasyLoading.dismiss();
-      itemController.setRxItem(value);
-      /* setState(() {
-        _itemList();
-      }); */
-    }); */
     super.initState();
   }
 
@@ -52,37 +41,103 @@ class _ItemListPageState extends State<ItemListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColor.grey,
-      appBar: !_isItemChecked
-          ? AppBar(
-              title: const Text(AppString.items),
-              backgroundColor: AppColor.primary,
-              foregroundColor: Colors.black87,
-            )
-          : _deleteAppBar(),
-      body: Column(
-        children: [
-          isShowSearchBox ? _searchBox() : _categorySearch(),
-          //Expanded(child: _itemList()),
-          FutureBuilder<List<ItemData>>(
-            future: DatabaseHelper().getItem(),
-            builder: (context,snapshot){
-                if(snapshot.hasData){
-                  //itemController.lstRxItem.value=snapshot.data!;
-                    itemController.setRxItem(snapshot.data!);
-                    return Expanded(child: _itemList());
-                }else if(snapshot.hasError){
-                    return Text(snapshot.error.toString());
-                }
-                return const CircularProgressIndicator();
+      appBar: AppBar(
+        title: Obx(() => itemController.isItemChecked.isFalse
+            ? const Text(AppString.items)
+            : Obx(() => Text(itemController.getCheckedRxItem().toString()))),
+        foregroundColor: Colors.black87,
+        backgroundColor: AppColor.primary,
+        leading: Obx(() {
+          if (itemController.isItemChecked.isTrue) {
+            return IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () {
+                itemController.checkUncheckAllRxItem(checked: false);
+                itemController.isItemChecked.value = false;
+                itemController.isAllItemChecked.value = false;
+              },
+            );
+          } else {
+            return const BackButton();
+          }
+        }),
+        actions: [
+          Obx(() {
+            if (itemController.isItemChecked.isTrue) {
+              return Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      itemController.deleteItem().then((value) {
+                        if (value) {
+                          itemController.isItemChecked.value = false;
+                          itemController.isAllItemChecked.value = false;
+                        }
+                      });
+                    },
+                  ),
+                  Obx(() {
+                    if (itemController.isAllItemChecked.isTrue) {
+                      return IconButton(
+                        icon: const Icon(
+                          Icons.checklist,
+                          color: AppColor.accent,
+                        ),
+                        onPressed: () {
+                          itemController.checkUncheckAllRxItem(checked: false);
+                          itemController.isAllItemChecked.value = false;
+                        },
+                      );
+                    } else {
+                      return IconButton(
+                        icon: const Icon(
+                          Icons.checklist,
+                        ),
+                        onPressed: () {
+                          itemController.checkUncheckAllRxItem(checked: true);
+                          itemController.isAllItemChecked.value = true;
+                        },
+                      );
+                    }
+                  }),
+                ],
+              );
+            } else {
+              return Container();
+            }
           })
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.black87,
-          child: const Icon(Icons.add),
-          onPressed: () {
-            Get.to(const CreateItemPage());
-          }),
+      body: Column(
+        children: [
+          Obx(() => itemController.isShowSearchBox.isTrue
+              ? _searchBox()
+              : _categorySearch()),
+          FutureBuilder<List<ItemData>>(
+              future: DatabaseHelper().getItem(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  itemController.setRxItem(snapshot.data!);
+                  return Expanded(child: _itemList());
+                } else if (snapshot.hasError) {
+                  return Text(snapshot.error.toString());
+                }
+                return const CircularProgressIndicator();
+              })
+        ],
+      ),
+      floatingActionButton: Obx(() {
+        return itemController.isItemChecked.isFalse
+            ? FloatingActionButton(
+                backgroundColor: Colors.black87,
+                child: const Icon(Icons.add),
+                onPressed: () {
+                  Get.to(const CreateItemPage());
+                },
+              )
+            : Container();
+      }),
     );
   }
 
@@ -122,17 +177,14 @@ class _ItemListPageState extends State<ItemListPage> {
                 onChanged: (bool? newValue) {
                   itemController.checkUncheckRxItem(
                       index: index, checked: newValue!);
-                  if (!_isItemChecked) {
-                    setState(() {
-                      _isItemChecked = true;
-                    });
+                  if (itemController.isItemChecked.isFalse) {
+                    itemController.isItemChecked.value = true;
                   }
 
                   if (!newValue) {
+                    itemController.isAllItemChecked.value = false;
                     if (!itemController.isExistCheckedRxItem()) {
-                      setState(() {
-                        _isItemChecked = false;
-                      });
+                      itemController.isItemChecked.value = false;
                     }
                   }
                 },
@@ -170,12 +222,12 @@ class _ItemListPageState extends State<ItemListPage> {
                 child: Obx(
                   () {
                     return DropdownButton(
-                      value: itemController.dropdownvalue.value,
+                      value: itemController.listDefaultCatVal.value,
                       icon: const Icon(
                         Icons.keyboard_arrow_down,
                         color: Colors.black87,
                       ),
-                      items: itemController.lstCategory.map((e) {
+                      items: itemController.lstCategoryInList.map((e) {
                         return DropdownMenuItem<CategoryData>(
                           value: e,
                           child: Text(e.categoryName),
@@ -188,11 +240,7 @@ class _ItemListPageState extends State<ItemListPage> {
                             .then((lstItem) {
                           EasyLoading.dismiss();
                           itemController.setRxItem(lstItem);
-                          itemController.dropdownvalue.value = value;
-                          /* setState(() {
-                          dropdownvalue = value;
-                          _itemList();
-                        }); */
+                          itemController.listDefaultCatVal.value = value;
                         });
                       },
                       isExpanded: true,
@@ -215,9 +263,7 @@ class _ItemListPageState extends State<ItemListPage> {
                 color: Colors.black87,
               ),
               onPressed: () {
-                setState(() {
-                  isShowSearchBox = true;
-                });
+                itemController.isShowSearchBox.value = true;
               },
             )),
       ],
@@ -225,23 +271,16 @@ class _ItemListPageState extends State<ItemListPage> {
   }
 
   Widget _searchBox() {
-    return SearchBox(
-        iconButton: IconButton(
-            onPressed: () {
-              setState(() {
-                isShowSearchBox = false;
-              });
-            },
-            icon: const Icon(
-              Icons.close,
-              color: Colors.black87,
-            )));
-  }
-
-  /* Widget _searchBox() {
     return Container(
       decoration: BoxDecoration(border: Border.all(color: Colors.black12)),
       child: TextField(
+          onSubmitted: (value) {
+            EasyLoading.show();
+            DatabaseHelper().getItem(searchValue: value).then((lstItem) {
+              EasyLoading.dismiss();
+              itemController.setRxItem(lstItem);
+            });
+          },
           cursorColor: Colors.black87,
           decoration: InputDecoration(
               hintText: AppString.search,
@@ -251,69 +290,17 @@ class _ItemListPageState extends State<ItemListPage> {
                   color: Colors.black87,
                 ),
                 onPressed: (() {
-                  setState(() {
-                    isShowSearchBox = false;
+                  itemController.isShowSearchBox.value = false;
+                  itemController.listDefaultCatVal.value =
+                      itemController.lstCategoryInList[0];
+                  EasyLoading.show();
+                  DatabaseHelper().getItem().then((lstItem) {
+                    EasyLoading.dismiss();
+                    itemController.setRxItem(lstItem);
                   });
                 }),
               ),
               border: const OutlineInputBorder(borderSide: BorderSide.none))),
-    );
-  } */
-
-  PreferredSizeWidget _deleteAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      foregroundColor: Colors.black87,
-      leading: IconButton(
-        icon: const Icon(Icons.close),
-        onPressed: () {
-          itemController.checkUncheckAllRxItem(checked: false);
-          setState(() {
-            _isItemChecked = false;
-          });
-        },
-      ),
-      title: Obx(() => Text(itemController.getCheckedRxItem().toString())),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.delete),
-          onPressed: () {
-            itemController.deleteItem().then((value) {
-              if (value) {
-                setState(() {
-                  _isItemChecked = false;
-                  _isAllItemChecked = false;
-                });
-              }
-            });
-          },
-        ),
-        !_isAllItemChecked
-            ? IconButton(
-                icon: const Icon(
-                  Icons.checklist,
-                ),
-                onPressed: () {
-                  itemController.checkUncheckAllRxItem(checked: true);
-                  setState(() {
-                    _isAllItemChecked = true;
-                  });
-                },
-              )
-            : IconButton(
-                icon: const Icon(
-                  Icons.checklist,
-                  color: AppColor.accent,
-                ),
-                onPressed: () {
-                  itemController.checkUncheckAllRxItem(checked: false);
-                  _isAllItemChecked = false;
-                  setState(() {
-                    _isAllItemChecked = false;
-                  });
-                },
-              )
-      ],
     );
   }
 }

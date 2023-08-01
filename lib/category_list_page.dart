@@ -16,38 +16,154 @@ class CategoryListPage extends StatefulWidget {
 }
 
 class _CategoryListPageState extends State<CategoryListPage> {
-  Icon customIcon = const Icon(Icons.search);
-  Widget customSearchBar = const Text(AppString.categories);
   var categoryController = Get.put(CategoryController());
-  bool _isCategoryChecked = false, _isAllCategoryChecked = false;
-
-  @override
-  void initState() {
-    DatabaseHelper().getCategory().then((value) {
-      categoryController.setRxCategory(value);
-      setState(() {
-        _categoryList();
-      });
-    });
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: AppColor.grey,
-        appBar: _isCategoryChecked ? _deleteAppBar() : _defaultAppBar(),
-        floatingActionButton: !_isCategoryChecked
-            ? FloatingActionButton(
-                backgroundColor: Colors.black87,
-                child: const Icon(Icons.add),
+        appBar: AppBar(
+          title: Obx(() {
+            if (categoryController.isCategoryChecked.isTrue) {
+              return Obx(() =>
+                  Text(categoryController.getCheckedRxCategory().toString()));
+            } else {
+              return Obx(() {
+                if (categoryController.isSearchCategory.isFalse) {
+                  return const Text(AppString.categories);
+                } else {
+                  return ListTile(
+                    leading: const Icon(
+                      Icons.search,
+                    ),
+                    title: TextField(
+                      controller: categoryController.searchController,
+                      decoration: const InputDecoration(
+                          hintText: AppString.search, border: InputBorder.none),
+                      style: const TextStyle(color: Colors.black87),
+                      cursorColor: Colors.black87,
+                      onChanged: (value) {
+                        DatabaseHelper()
+                            .getCategory(searchValue: value)
+                            .then((lstCategory) {
+                          categoryController.setRxCategory(lstCategory);
+                        });
+                      },
+                    ),
+                  );
+                }
+              });
+            }
+          }),
+          backgroundColor: AppColor.primary,
+          foregroundColor: Colors.black87,
+          leading: Obx(() {
+            if (categoryController.isCategoryChecked.isTrue) {
+              return IconButton(
+                icon: const Icon(Icons.close),
                 onPressed: () {
-                  Get.to(() => const CreateCategoryPage(),
-                      arguments: {"CategoryID": 0});
+                  categoryController.checkUncheckAllRxCategory(checked: false);
+                  categoryController.isCategoryChecked.value = false;
+                  categoryController.isAllCategoryChecked.value = false;
                 },
-              )
-            : Container(),
-        body: _categoryList());
+              );
+            } else {
+              return const BackButton();
+            }
+          }),
+          actions: [
+            Obx(() {
+              if (categoryController.isCategoryChecked.isFalse) {
+                if (categoryController.isSearchCategory.isFalse) {
+                  return IconButton(
+                      onPressed: () {
+                        categoryController.isSearchCategory.value = true;
+                      },
+                      icon: const Icon(Icons.search));
+                } else {
+                  return IconButton(
+                      onPressed: () {
+                        categoryController.isSearchCategory.value = false;
+                        categoryController.searchController.text = "";
+                        DatabaseHelper().getCategory().then((value) {
+                          categoryController.setRxCategory(value);
+                        });
+                      },
+                      icon: const Icon(Icons.close));
+                }
+              } else {
+                return Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.delete),
+                      onPressed: () {
+                        categoryController.deleteCategory().then((value) {
+                          if (value) {
+                            categoryController.isCategoryChecked.value = false;
+                            categoryController.isAllCategoryChecked.value =
+                                false;
+                          }
+                        });
+                      },
+                    ),
+                    Obx(() {
+                      if (categoryController.isAllCategoryChecked.isTrue) {
+                        return IconButton(
+                          icon: const Icon(
+                            Icons.checklist,
+                            color: AppColor.accent,
+                          ),
+                          onPressed: () {
+                            categoryController.checkUncheckAllRxCategory(
+                                checked: false);
+                            categoryController.isCategoryChecked.value = false;
+                            categoryController.isAllCategoryChecked.value =
+                                false;
+                          },
+                        );
+                      } else {
+                        return IconButton(
+                          icon: const Icon(
+                            Icons.checklist,
+                          ),
+                          onPressed: () {
+                            categoryController.checkUncheckAllRxCategory(
+                                checked: true);
+                            categoryController.isAllCategoryChecked.value =
+                                true;
+                          },
+                        );
+                      }
+                    })
+                  ],
+                );
+              }
+            })
+          ],
+        ),
+        floatingActionButton: Obx(() {
+          return categoryController.isCategoryChecked.isFalse
+              ? FloatingActionButton(
+                  backgroundColor: Colors.black87,
+                  child: const Icon(Icons.add),
+                  onPressed: () {
+                    Get.to(() => const CreateCategoryPage(),
+                        arguments: {"CategoryID": 0});
+                  },
+                )
+              : Container();
+        }),
+        body: FutureBuilder<List<CategoryData>>(
+            future: DatabaseHelper().getCategory(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                categoryController.setRxCategory(snapshot.data!);
+                return _categoryList();
+              } else if (snapshot.hasError) {
+                return Text(snapshot.error.toString());
+              }
+              return const Center(child: CircularProgressIndicator());
+            }));
   }
 
   Widget _categoryList() {
@@ -55,10 +171,11 @@ class _CategoryListPageState extends State<CategoryListPage> {
         itemCount: categoryController.lstRxCategory.length,
         itemBuilder: (context, index) {
           CategoryData data = categoryController.lstRxCategory[index];
+          data.totalItem ??= 0;
           return ListTile(
             leading: const Icon(Icons.category),
             title: Text(data.categoryName),
-            subtitle: Text("0 Items"),
+            subtitle: Text("${data.totalItem} Items"),
             trailing: Obx(
               () => Checkbox(
                 checkColor: AppColor.accent,
@@ -73,19 +190,17 @@ class _CategoryListPageState extends State<CategoryListPage> {
                           categoryId: data.categoryId,
                           categoryCode: data.categoryCode,
                           categoryName: data.categoryName,
-                          isSelected: newValue));
+                          isSelected: newValue,
+                          totalItem: data.totalItem));
 
-                  if (!_isCategoryChecked) {
-                    setState(() {
-                      _isCategoryChecked = true;
-                    });
+                  if (categoryController.isCategoryChecked.isFalse) {
+                    categoryController.isCategoryChecked.value = true;
                   }
 
                   if (!newValue!) {
+                    categoryController.isAllCategoryChecked.value=false;
                     if (!categoryController.isExistCheckedRxCategory()) {
-                      setState(() {
-                        _isCategoryChecked = false;
-                      });
+                      categoryController.isCategoryChecked.value = false;
                     }
                   }
                 },
@@ -102,114 +217,5 @@ class _CategoryListPageState extends State<CategoryListPage> {
             },
           );
         })));
-  }
-
-  PreferredSizeWidget _defaultAppBar() {
-    return AppBar(
-        title: customSearchBar,
-        backgroundColor: AppColor.primary,
-        foregroundColor: Colors.black87,
-        actions: [
-          IconButton(
-            icon: customIcon,
-            onPressed: (() {
-              setState(() {
-                if (customIcon.icon == Icons.search) {
-                  customIcon = const Icon(Icons.close);
-                  customSearchBar = ListTile(
-                    leading: const Icon(
-                      Icons.search,
-                    ),
-                    title: TextField(
-                      controller: categoryController.searchController,
-                      decoration: const InputDecoration(
-                          hintText: AppString.search, border: InputBorder.none),
-                      style: const TextStyle(color: Colors.black87),
-                      cursorColor: Colors.black87,
-                      onChanged: (value) {
-                        DatabaseHelper()
-                            .getCategory(searchValue: value)
-                            .then((lstCategory) {
-                          categoryController.setRxCategory(lstCategory);
-                          setState(() {
-                            _categoryList();
-                          });
-                        });
-                      },
-                    ),
-                  );
-                } else {
-                  customIcon = const Icon(Icons.search);
-                  customSearchBar = const Text(AppString.categories);
-                  categoryController.searchController.text = "";
-                  DatabaseHelper().getCategory().then((value) {
-                    categoryController.setRxCategory(value);
-                    setState(() {
-                      _categoryList();
-                    });
-                  });
-                }
-              });
-            }),
-          )
-        ]);
-  }
-
-  PreferredSizeWidget _deleteAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      foregroundColor: Colors.black87,
-      leading: IconButton(
-        icon: const Icon(Icons.close),
-        onPressed: () {
-          categoryController.checkUncheckAllRxCategory(checked: false);
-          setState(() {
-            _isCategoryChecked = false;
-          });
-        },
-      ),
-      title:
-          Obx(() => Text(categoryController.getCheckedRxCategory().toString())),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.delete),
-          onPressed: () {
-            categoryController.deleteCategory().then((value) {
-              if (value) {
-                setState(() {
-                  _isCategoryChecked = false;
-                  _isAllCategoryChecked=false;
-                });
-              }
-            });
-          },
-        ),
-        !_isAllCategoryChecked
-            ? IconButton(
-                icon: const Icon(
-                  Icons.checklist,
-                ),
-                onPressed: () {
-                  categoryController.checkUncheckAllRxCategory(checked: true);
-                  setState(() {
-                    _isAllCategoryChecked = true;
-                  });
-                },
-              )
-            : IconButton(
-                icon: const Icon(
-                  Icons.checklist,
-                  color: AppColor.accent,
-                ),
-                onPressed: () {
-                  categoryController.checkUncheckAllRxCategory(checked: false);
-                  _isCategoryChecked = false;
-                  setState(() {
-                    _isAllCategoryChecked = false;
-                  });
-                },
-              )
-      ],
-    );
   }
 }

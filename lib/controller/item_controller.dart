@@ -18,10 +18,16 @@ class ItemController extends GetxController {
   final costController = TextEditingController();
   String base64Photo = "";
   Rx<Uint8List> decodedBytes = Uint8List(0).obs;
-  Rx<CategoryData> dropdownvalue =
+  Rx<CategoryData> listDefaultCatVal =
       CategoryData(categoryId: 0, categoryCode: "", categoryName: "All Items").obs;
-  RxList<CategoryData> lstCategory = <CategoryData>[].obs;
+  RxList<CategoryData> lstCategoryInList = <CategoryData>[].obs;
+  Rx<CategoryData> createDefaultCatVal =
+      CategoryData(categoryId: 0, categoryCode: "", categoryName: "").obs;
+  RxList<CategoryData> lstCategoryInCreate = <CategoryData>[].obs;
   RxList<ItemData> lstRxItem = <ItemData>[].obs;
+  RxBool isItemChecked=false.obs;
+  RxBool isAllItemChecked=false.obs;
+  RxBool isShowSearchBox=false.obs;
 
   Future<bool> insert() async {
     bool result = false;
@@ -32,7 +38,7 @@ class ItemController extends GetxController {
         if (!value) {
           await DatabaseHelper()
               .insertItem(ItemData.insertItem(
-                  categoryId: dropdownvalue.value.categoryId,
+                  categoryId: createDefaultCatVal.value.categoryId,
                   itemCode: codeController.text,
                   itemName: nameController.text,
                   salePrice: salePriceController.text.isEmpty
@@ -53,7 +59,7 @@ class ItemController extends GetxController {
               result = true;
               addRxItem(
                   itemId: value,
-                  categoryId: dropdownvalue.value.categoryId,
+                  categoryId: createDefaultCatVal.value.categoryId,
                   base64Photo: base64Photo);
               clearControl();
             } else {
@@ -81,7 +87,7 @@ class ItemController extends GetxController {
           await DatabaseHelper()
               .updateItem(ItemData.updateItem(
                   itemId: itemId,
-                  categoryId: dropdownvalue.value.categoryId,
+                  categoryId: createDefaultCatVal.value.categoryId,
                   itemCode: codeController.text,
                   itemName: nameController.text,
                   salePrice: salePriceController.text.isEmpty
@@ -98,7 +104,7 @@ class ItemController extends GetxController {
             if (value != 0) {
               removeAndInsertRxItem(
                   itemId: itemId,
-                  categoryId: dropdownvalue.value.categoryId,
+                  categoryId: createDefaultCatVal.value.categoryId,
                   base64Photo: base64Photo);
               Get.back();
             } else {
@@ -150,7 +156,7 @@ class ItemController extends GetxController {
       Get.snackbar(AppString.appName, AppString.enterName,
           snackPosition: SnackPosition.TOP, icon: const Icon(Icons.warning));
       return false;
-    } else if (dropdownvalue.value.categoryId == 0) {
+    } else if (createDefaultCatVal.value.categoryId == 0) {
       Get.snackbar(AppString.appName, AppString.notFoundCategory,
           snackPosition: SnackPosition.TOP, icon: const Icon(Icons.warning));
       return false;
@@ -166,8 +172,8 @@ class ItemController extends GetxController {
     costController.text = "";
     base64Photo = "";
     decodedBytes.value = Uint8List(0);
-    if (lstCategory.isNotEmpty) {
-      dropdownvalue.value = lstCategory[0];
+    if (lstCategoryInCreate.isNotEmpty) {
+      createDefaultCatVal.value = lstCategoryInCreate[0];
     }
   }
 
@@ -181,9 +187,9 @@ class ItemController extends GetxController {
     decodedBytes.value = decode(base64Photo);
 
     int categoryId = argumentData["CategoryID"];
-    for (int i = 0; i < lstCategory.length; i++) {
-      if (lstCategory[i].categoryId == categoryId) {
-        dropdownvalue.value = lstCategory[i];
+    for (int i = 0; i < lstCategoryInCreate.length; i++) {
+      if (lstCategoryInCreate[i].categoryId == categoryId) {
+        createDefaultCatVal.value = lstCategoryInCreate[i];
         break;
       }
     }
